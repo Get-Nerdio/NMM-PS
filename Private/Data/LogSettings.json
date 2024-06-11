@@ -1,0 +1,5 @@
+{
+  "LogPathWindows": "%WINDIR%\\Temp\\NMMLogs",
+  "LogPathMacOS": "/tmp/NMMLogs",
+  "EnableLogging": false
+}

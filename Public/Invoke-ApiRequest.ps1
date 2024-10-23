@@ -47,7 +47,9 @@ function Invoke-APIRequest {
 
         # Execute the API request
         if ($Body) {
-            $BodyJSON = $Body | ConvertTo-Json -ErrorAction Stop
+            $BodyJSON = $Body | ConvertTo-Json -Depth 10 -ErrorAction Stop
+            Write-Verbose "Request body JSON:"
+            Write-Verbose $BodyJSON
             $response = Invoke-RestMethod -Uri $uri -Body $BodyJSON -Method $Method -Headers $requestHeaders -ContentType 'application/json'
         }
         else {
@@ -59,6 +61,11 @@ function Invoke-APIRequest {
     }
     catch {
         Write-Error "API request failed: $_"
+        Write-Verbose "Error details: $($_.Exception.Message)"
+        if ($_.Exception.Response) {
+            Write-Verbose "Response status code: $($_.Exception.Response.StatusCode)"
+            Write-Verbose "Response content: $($_.Exception.Response.Content.ReadAsStringAsync().Result)"
+        }
     }
     finally {
         Write-Verbose "Completed API request"

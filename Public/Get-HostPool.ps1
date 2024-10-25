@@ -1,174 +1,208 @@
 function Get-Hostpool {
-    [CmdletBinding(DefaultParameterSetName = 'None')]
-    Param(
-        [Parameter(ParameterSetName = 'None', Mandatory = $true)]
-        [Parameter(ParameterSetName = 'All', Mandatory = $true)]
-        [Parameter(ParameterSetName = 'Details', Mandatory = $true)]
-        [int]$Id,
+    [CmdletBinding(DefaultParameterSetName = 'All')]
+    param (
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        [string]$AccountId,
 
-        [Parameter(ParameterSetName = 'All', Mandatory = $false)]
-        [bool]$All = $true,
+        [Parameter(ParameterSetName = 'Specific', Mandatory = $true)]
+        [string]$SubscriptionId,
 
-        [Parameter(ParameterSetName = 'None', Mandatory = $false)]
-        [string]$HostpoolName,
-
-        [Parameter(ParameterSetName = 'None', Mandatory = $false)]
-        [string]$Subscription,
-
-        [Parameter(ParameterSetName = 'None', Mandatory = $false)]
+        [Parameter(ParameterSetName = 'Specific', Mandatory = $true)]
         [string]$ResourceGroup,
 
-        [Parameter(ParameterSetName = 'None', Mandatory = $false)]
-        [bool]$AutoScaleEnabled = $false,
+        [Parameter(ParameterSetName = 'Specific', Mandatory = $true)]
+        [string]$PoolName,
 
-        [Parameter(ParameterSetName = 'Details', Mandatory = $false)]
-        [bool]$AutoScaleSettings = $false,
+        [Parameter(ParameterSetName = 'Specific')]
+        [switch]$AutoScaleConfiguration,
 
-        [Parameter(ParameterSetName = 'Details', Mandatory = $false)]
-        [bool]$AutoScaleConfiguration = $false,
+        [Parameter(ParameterSetName = 'Specific')]
+        [switch]$AutoScaleSettings,
 
-        [Parameter(ParameterSetName = 'Details', Mandatory = $false)]
-        [bool]$ActiveDirectory = $false,
+        [Parameter(ParameterSetName = 'Specific')]
+        [switch]$ActiveDirectory,
 
-        [Parameter(ParameterSetName = 'Details', Mandatory = $false)]
-        [bool]$FSLogixConfig = $false,
+        [Parameter(ParameterSetName = 'Specific')]
+        [switch]$HostPoolProperties,
 
-        [Parameter(ParameterSetName = 'Details', Mandatory = $false)]
-        [bool]$RDPSettings = $false,
+        [Parameter(ParameterSetName = 'Specific')]
+        [switch]$VMDeploymentSettings,
 
-        [Parameter(ParameterSetName = 'Details', Mandatory = $false)]
-        [bool]$AssignedUsers = $false,
+        [Parameter(ParameterSetName = 'Specific')]
+        [switch]$RDPSettings,
 
-        [Parameter(ParameterSetName = 'Details', Mandatory = $false)]
-        [bool]$HostPoolProperties = $false,
+        [Parameter(ParameterSetName = 'Specific')]
+        [switch]$FSLogixConfig,
 
-        [Parameter(ParameterSetName = 'Details', Mandatory = $false)]
-        [bool]$VMDeploymentSettings = $false,
+        [Parameter(ParameterSetName = 'Specific')]
+        [switch]$SessionTimeouts,
 
-        [Parameter(ParameterSetName = 'Details', Mandatory = $false)]
-        [bool]$SessionTimouts = $false
+        [Parameter(ParameterSetName = 'Specific')]
+        [switch]$Tags,
+
+        [Parameter(ParameterSetName = 'Specific')]
+        [switch]$ScheduleConfigurations,
+
+        [Parameter(ParameterSetName = 'Specific')]
+        [switch]$AssignedUsers,
+
+        [Parameter(ParameterSetName = 'All')]
+        [Parameter(ParameterSetName = 'Specific')]
+        [switch]$IncludeAllDetails,
+
+        [switch]$AsJson
     )
 
-    # Validate the Id parameter
-    [ValidateScript({
-            if ($PSCmdlet.ParameterSetName -eq 'None' -and -not $All -and 
-                -not $HostpoolName -and 
-                -not $AutoScaleSettings -and 
-                -not $AutoScaleConfiguration -and 
-                -not $ActiveDirectory -and 
-                -not $FSLogixConfig -and 
-                -not $RDPSettings -and 
-                -not $AssignedUsers -and 
-                -not $HostPoolProperties -and 
-                -not $VMDeploymentSettings -and 
-                -not $SessionTimouts) {
-                throw "The -Id parameter must be combined with -All or one of the detail parameters."
+    begin {
+        $results = [System.Collections.Generic.List[object]]::new()
+        $startTime = Get-Date
+        Write-Verbose "Starting Get-HostpoolV2 execution at $startTime"
+    }
+
+    process {
+        try {
+            # Define available detail endpoints
+            $detailEndpoints = @{
+                AutoScaleConfiguration = 'autoscale-configuration'
+                AutoScaleSettings     = 'autoscale-settings'
+                ActiveDirectory       = 'active-directory'
+                HostPoolProperties    = 'avd'
+                VMDeploymentSettings  = 'vm-deployment'
+                RDPSettings          = 'rdp-settings'
+                FSLogixConfig        = 'fslogix'
+                SessionTimeouts      = 'session-timeouts'
+                Tags                 = 'tags'
+                ScheduleConfigurations = 'schedule-configurations'
+                AssignedUsers        = 'assigned-users'
             }
-            return $true
-        })]
-    $Id
 
-    $begin = Get-Date
-    $results = [System.Collections.Generic.List[object]]::new()
+            switch ($PSCmdlet.ParameterSetName) {
+                'Specific' {
+                    Write-Verbose "Retrieving specific host pool details for $PoolName"
+                    
+                    # First get all host pools to find the specific one
+                    $allHostPools = Invoke-APIRequest -Method 'GET' -Endpoint "accounts/$AccountId/host-pool"
+                    $hostPool = $allHostPools | Where-Object { 
+                        $_.hostPoolName -eq $PoolName -and 
+                        $_.subscription -eq $SubscriptionId -and 
+                        $_.resourceGroup -eq $ResourceGroup 
+                    }
 
-    Try {
-        # Get all host pools in the account
-        $allHostPools = Invoke-APIRequest -Method 'GET' -Endpoint "accounts/$Id/host-pool"
+                    if (-not $hostPool) {
+                        Write-Error "Host pool '$PoolName' not found"
+                        return
+                    }
+                    
+                    $hostPoolObj = [PSCustomObject]@{
+                        HostPool = $hostPool
+                        Details  = @{}
+                    }
 
-        switch ($PSCmdlet.ParameterSetName) {
-            'All' {
-                $results.Add($allHostPools)
-            }
-            'Details' {
-                if (-not $HostpoolName) {
-                    # Iterate over each host pool and gather details
-                    foreach ($hostPool in $allHostPools) {
-                        # Initialize an object to hold endpoint responses for the current host pool
-                        $hostPoolResponseObj = @{}
-                
-                        $Subscription = $hostPool.subscription
-                        $ResourceGroup = $hostPool.resourceGroup
-                        $HostpoolName = $hostPool.hostPoolName
-                
-                        # List to hold endpoints
-                        $endpoints = New-Object System.Collections.Generic.List[System.String]
-                        if ($AutoScaleSettings) { $endpoints.Add("accounts/$Id/host-pool/$Subscription/$ResourceGroup/$HostpoolName/autoscale-settings") }
-                        if ($AutoScaleConfiguration) { $endpoints.Add("accounts/$Id/host-pool/$Subscription/$ResourceGroup/$HostpoolName/autoscale-configuration") }
-                        if ($ActiveDirectory) { $endpoints.Add("accounts/$Id/host-pool/$Subscription/$ResourceGroup/$HostpoolName/active-directory") }
-                        if ($FSLogixConfig) { $endpoints.Add("accounts/$Id/host-pool/$Subscription/$ResourceGroup/$HostpoolName/fslogix") }
-                        if ($RDPSettings) { $endpoints.Add("accounts/$Id/host-pool/$Subscription/$ResourceGroup/$HostpoolName/rdp-settings") }
-                        if ($AssignedUsers) { $endpoints.Add("accounts/$Id/host-pool/$Subscription/$ResourceGroup/$HostpoolName/assigned-users") }
-                        if ($HostPoolProperties) { $endpoints.Add("accounts/$Id/host-pool/$Subscription/$ResourceGroup/$HostpoolName/avd") }
-                        if ($VMDeploymentSettings) { $endpoints.Add("accounts/$Id/host-pool/$Subscription/$ResourceGroup/$HostpoolName/vm-deployment") }
-                        if ($SessionTimouts) { $endpoints.Add("accounts/$Id/host-pool/$Subscription/$ResourceGroup/$HostpoolName/session-timeouts") }
-                
-                        # Collect responses from each endpoint
-                        foreach ($endpoint in $endpoints) {
-                            $response = Invoke-APIRequest -Method 'GET' -Endpoint $endpoint
-                            $propertyName = ($endpoint -split '/')[-1]
-                            Write-Output "Adding property $propertyName to host pool response object for $HostpoolName"
-                            $hostPoolResponseObj[$propertyName] = $response
+                    # Base endpoint for details
+                    $baseEndpoint = "accounts/$AccountId/host-pool/$SubscriptionId/$ResourceGroup/$PoolName"
+
+                    # If IncludeAllDetails is specified, get all details
+                    if ($IncludeAllDetails) {
+                        foreach ($endpoint in $detailEndpoints.GetEnumerator()) {
+                            $detailEndpoint = "$baseEndpoint/$($endpoint.Value)"
+                            Write-Verbose "Getting $($endpoint.Key) details from: $detailEndpoint"
+                            
+                            try {
+                                $response = Invoke-APIRequest -Method 'GET' -Endpoint $detailEndpoint
+                                $hostPoolObj.Details[$endpoint.Key] = $response
+                            }
+                            catch {
+                                Write-Warning "Failed to retrieve $($endpoint.Key) for host pool $PoolName`: $_"
+                                $hostPoolObj.Details[$endpoint.Key] = $null
+                            }
                         }
-                
-                        # Add the nested object under the host pool name in the main results object
-                        $responseObj = @{$HostpoolName = $hostPoolResponseObj }
-                
-                        # Add the complete object to the results array
-                        [void]$results.Add($responseObj)
                     }
+                    # Otherwise, get only requested details
+                    else {
+                        foreach ($param in $PSBoundParameters.Keys) {
+                            if ($detailEndpoints.ContainsKey($param)) {
+                                $detailEndpoint = "$baseEndpoint/$($detailEndpoints[$param])"
+                                Write-Verbose "Getting $param details from: $detailEndpoint"
+                                
+                                try {
+                                    $response = Invoke-APIRequest -Method 'GET' -Endpoint $detailEndpoint
+                                    $hostPoolObj.Details[$param] = $response
+                                }
+                                catch {
+                                    Write-Warning "Failed to retrieve $param for host pool $PoolName`: $_"
+                                    $hostPoolObj.Details[$param] = $null
+                                }
+                            }
+                        }
+                    }
+
+                    $results.Add($hostPoolObj)
                 }
-                else {
-                    # Gather details for the specified host pool
-                    $Hostpool = $allHostPools | Where-Object { $_.hostPoolName -eq $HostpoolName }
-                    Write-Verbose "Hostpool: $($Hostpool)"
-                    
-                    # Collect responses from each endpoint and add as separate properties
-                    $responseObj = @{}
 
-                    $responseObj['Hostpool'] = $Hostpool
+                'All' {
+                    Write-Verbose "Retrieving all host pools for account $AccountId"
+                    $hostPools = Invoke-APIRequest -Method 'GET' -Endpoint "accounts/$AccountId/host-pool"
 
-                    $Subscription = $hostPool.subscription
-                    $ResourceGroup = $hostPool.resourceGroup
-                    $HostpoolName = $hostPool.hostPoolName
+                    foreach ($hostPool in $hostPools) {
+                        $hostPoolObj = [PSCustomObject]@{
+                            HostPool = $hostPool
+                            Details  = @{}
+                        }
 
-                    $baseEndpoint = "accounts/$($Id)/host-pool/$($Subscription)/$($ResourceGroup)/$($HostpoolName)"
+                        if ($IncludeAllDetails) {
+                            Write-Verbose "Collecting all details for host pool $($hostPool.hostPoolName)"
+                            foreach ($endpoint in $detailEndpoints.GetEnumerator()) {
+                                $baseEndpoint = "accounts/$AccountId/host-pool/$($hostPool.subscription)/$($hostPool.resourceGroup)/$($hostPool.hostPoolName)"
+                                try {
+                                    $response = Invoke-APIRequest -Method 'GET' -Endpoint "$baseEndpoint/$($endpoint.Value)"
+                                    $hostPoolObj.Details[$endpoint.Key] = $response
+                                }
+                                catch {
+                                    Write-Warning "Failed to retrieve $($endpoint.Key) for host pool $($hostPool.hostPoolName): $_"
+                                    $hostPoolObj.Details[$endpoint.Key] = $null
+                                }
+                            }
+                        }
 
-                    $endpoints = New-Object System.Collections.Generic.List[System.String]
-                    if ($AutoScaleSettings) { $endpoints.Add("$baseEndpoint/autoscale-settings") }
-                    if ($AutoScaleConfiguration) { $endpoints.Add("$baseEndpoint/autoscale-configuration") }
-                    if ($ActiveDirectory) { $endpoints.Add("$baseEndpoint/active-directory") }
-                    if ($FSLogixConfig) { $endpoints.Add("$baseEndpoint/fslogix") }
-                    if ($RDPSettings) { $endpoints.Add("$baseEndpoint/rdp-settings") }
-                    if ($AssignedUsers) { $endpoints.Add("$baseEndpoint/assigned-users") }
-                    if ($HostPoolProperties) { $endpoints.Add("$baseEndpoint/avd") }
-                    if ($VMDeploymentSettings) { $endpoints.Add("$baseEndpoint/vm-deployment") }
-                    if ($SessionTimouts) { $endpoints.Add("$baseEndpoint/session-timeouts") }
-
-                                        
-                    # Collect responses from each endpoint
-                    foreach ($endpoint in $endpoints) {
-                        $response = Invoke-APIRequest -Method 'GET' -Endpoint $endpoint
-                        $propertyName = ($endpoint -split '/')[-1]
-                        Write-Output "Adding property $propertyName to response object"
-                        $responseObj[$propertyName] = $response
-                        
+                        $results.Add($hostPoolObj)
                     }
-                    
-                    # Add the dynamic object to the results array
-                    [void]$results.Add($responseObj)
-
                 }
             }
         }
+        catch {
+            $errorMessage = "Error occurred while retrieving host pool information"
+            if ($_.Exception.Response) {
+                $errorMessage += ": $($_.Exception.Response.StatusCode) - $($_.Exception.Response.StatusDescription)"
+                try {
+                    $errorContent = $_.Exception.Response.GetResponseStream()
+                    $reader = New-Object System.IO.StreamReader($errorContent)
+                    $errorBody = $reader.ReadToEnd()
+                    if ($errorBody) {
+                        $errorMessage += "`nResponse: $errorBody"
+                    }
+                }
+                catch {
+                    $errorMessage += "`nCould not read error response: $_"
+                }
+            }
+            else {
+                $errorMessage += ": $_"
+            }
+            Write-Error $errorMessage
+        }
+    }
 
+    end {
+        $endTime = Get-Date
+        $duration = New-TimeSpan -Start $startTime -End $endTime
+        Write-Verbose "Execution completed in $duration"
+
+        if ($AsJson) {
+            return $results | ConvertTo-Json -Depth 10
+        }
         return $results
     }
-    Catch {
-        Write-Error "Error: $($_.Exception.Message)"
-    }
-    Finally {
-        $runtime = New-TimeSpan -Start $begin -End (Get-Date)
-        Write-Verbose "Execution completed in $runtime"
-    }
 }
+
+
 

@@ -57,3 +57,36 @@ $autoScaleParams = @{
 Set-AutoScale @autoScaleParams
 
 ```
+Some other trigger examples are below.
+
+```powershell
+# User Driven trigger
+$scalingTriggers.Add(@{
+    triggerType = "UserDriven"
+    userDriven = @{
+        scaleOut = @{
+            hostChangeCount = 1
+            value = 2
+        }
+        scaleIn = @{
+            hostChangeCount = 1
+            value = 1
+        }
+    }
+})
+
+# AvgActiveSessions trigger example
+$scalingTriggers.Add(@{
+    triggerType = "AvgActiveSessions"
+    averageActiveSessions = @{
+        scaleOut = @{
+            hostChangeCount = 1
+            value = 10
+        }
+        scaleIn = @{
+            hostChangeCount = 1
+            value = 5
+        }
+    }
+})
+```

@@ -33,7 +33,7 @@ function Get-SAMAuthorizationCode {
     # .EXAMPLE
     # # Using SAM configuration data
     # $samConfig = (Get-ConfigData).SAM
-    # $token = Get-SAMAuthorizationCode -tenantId $samConfig.MSPTenantId -appId $samConfig.ApplicationId
+    # $token = Get-SAMAuthorizationCode -tenantId $samConfig.MSPTenantId -appId $samConfig.ApplicationId -appSecret $samConfig.ApplicationSecret
     #
     # .NOTES
     # The function requires the System.Web assembly for URL parsing.
@@ -42,53 +42,62 @@ function Get-SAMAuthorizationCode {
     param (
         [string]$tenantId, #MSPTenantId
         [string]$appId, #SAMApplicationId
-        [string]$redirectUri, #http://localhost:8400
-        [string]$scope #https://api.partnercenter.microsoft.com/.default
+        [string]$appSecret, #SAMApplicationSecret
+        [string]$redirectUri = 'http://localhost:8400',
+        [string]$scope = 'https://api.partnercenter.microsoft.com/.default'
     )
     
     # Add assembly for HttpUtility
     Add-Type -AssemblyName System.Web
+    
     # Create HTTP Listener
-    $listener = New-Object System.Net.HttpListener
-    $listener.Prefixes.Add("http://localhost:8400/")
-    $listener.Start()
+    $listener = $null
+    try {
+        $listener = New-Object System.Net.HttpListener
+        $listener.Prefixes.Add("http://localhost:8400/")
+        $listener.Start()
 
-    # Construct auth URL
-    $authEndpoint = "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/authorize?" + `
-        "client_id=$appId&" + `
-        "response_type=code&" + `
-        "redirect_uri=$redirectUri&" + `
-        "scope=$scope"
+        # Construct auth URL
+        $authEndpoint = "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/authorize?" + `
+            "client_id=$appId&" + `
+            "response_type=code&" + `
+            "redirect_uri=$redirectUri&" + `
+            "scope=$scope"
 
-    # Open default browser
-    Start-Process $authEndpoint
+        # Open default browser
+        Start-Process $authEndpoint
 
-    # Wait for the callback
-    $context = $listener.GetContext()
-    $requestUrl = $context.Request.Url
-    
-    # Send a response to close the browser window
-    $response = $context.Response
-    $responseString = "<html><body><h1>Authorization complete. You can close this window.</h1></body></html>"
-    $buffer = [System.Text.Encoding]::UTF8.GetBytes($responseString)
-    $response.ContentLength64 = $buffer.Length
-    $response.OutputStream.Write($buffer, 0, $buffer.Length)
-    $response.Close()
-    
-    # Stop the listener
-    $listener.Stop()
+        # Wait for the callback
+        $context = $listener.GetContext()
+        $requestUrl = $context.Request.Url
+        
+        # Send a response to close the browser window
+        $response = $context.Response
+        $responseString = "<html><body><h1>Authorization complete. You can close this window.</h1></body></html>"
+        $buffer = [System.Text.Encoding]::UTF8.GetBytes($responseString)
+        $response.ContentLength64 = $buffer.Length
+        $response.OutputStream.Write($buffer, 0, $buffer.Length)
+        $response.Close()
 
-    # Extract the authorization code from the URL
-    $code = [System.Web.HttpUtility]::ParseQueryString($requestUrl.Query)["code"]
+        # Extract the authorization code and get token
+        $code = [System.Web.HttpUtility]::ParseQueryString($requestUrl.Query)["code"]
+        
+        $body = "grant_type=authorization_code&client_id=$appId&client_secret=$appSecret&code=$code&redirect_uri=$redirectUri&scope=$scope"
+        $headers = @{ 'Content-Type' = 'application/x-www-form-urlencoded' }
+        $tokenEndpoint = "https://login.microsoftonline.com/$tenantId/oauth2/token"
+        $response = Invoke-RestMethod -Method POST -Uri $tokenEndpoint -Body $body -Headers $headers
 
-    $body = "grant_type=authorization_code&client_id=$appId&client_secret=$appSecret&code=$code&redirect_uri=$redirectUri&scope=$scope"
-    $headers = @{ 'Content-Type' = 'application/x-www-form-urlencoded' }
-    $tokenEndpoint = "https://login.microsoftonline.com/$tenantId/oauth2/token"
-    $response = Invoke-RestMethod -Method POST -Uri $tokenEndpoint -Body $body -Headers $headers
-
-    #$AccessToken = $response.Access_Token
-
-    $AccessToken = @{ Authorization = "Bearer $($response.Access_Token)" }
-    
-    return $AccessToken
+        $AccessToken = @{ Authorization = "Bearer $($response.Access_Token)" }
+        return $AccessToken
+    }
+    catch {
+        Write-Error "Authorization failed: $_"
+        throw
+    }
+    finally {
+        if ($null -ne $listener -and $listener.IsListening) {
+            $listener.Stop()
+            $listener.Close()
+        }
+    }
 }

@@ -28,6 +28,12 @@ function Invoke-AppConsentFlow {
     Switch to process consent flow for all customers. When specified, the function will retrieve
     all customer tenants from Partner Center automatically.
 
+    .PARAMETER AddSAM
+    Switch to use SAM configuration for tenantId and appId.
+
+    .PARAMETER samDisplayName
+    The display name of the SAM configuration.
+
     .EXAMPLE
     # Process specific customers
     $customers = @{
@@ -46,13 +52,13 @@ function Invoke-AppConsentFlow {
 
     [CmdletBinding(DefaultParameterSetName = 'Specific')]
     param (
-        [Parameter(Mandatory, ParameterSetName = 'Specific')]
-        [Parameter(Mandatory, ParameterSetName = 'All')]
-        [string]$tenantId, #MSPTenantId
+        [Parameter(Mandatory = $false, ParameterSetName = 'Specific')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'All')]
+        [string]$tenantId,
 
-        [Parameter(Mandatory, ParameterSetName = 'Specific')]
-        [Parameter(Mandatory, ParameterSetName = 'All')]
-        [string]$appId, #SAMApplicationId
+        [Parameter(Mandatory = $false, ParameterSetName = 'Specific')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'All')]
+        [string]$appId,
 
         [Parameter(ParameterSetName = 'Specific')]
         [Parameter(ParameterSetName = 'All')]
@@ -66,7 +72,15 @@ function Invoke-AppConsentFlow {
         [hashtable]$customerTenants, #Hashtable of CustomerTenantId and DisplayName
 
         [Parameter(Mandatory, ParameterSetName = 'All')]
-        [switch]$AllCustomers
+        [switch]$AllCustomers,
+
+        [Parameter(ParameterSetName = 'Specific')]
+        [Parameter(ParameterSetName = 'All')]
+        [string]$samDisplayName,
+
+        [Parameter(ParameterSetName = 'Specific')]
+        [Parameter(ParameterSetName = 'All')]
+        [switch]$AddSAM
     )
 
     # Get SAM configuration
@@ -76,7 +90,20 @@ function Invoke-AppConsentFlow {
         return
     }
 
+    # Set tenantId, appId, and samDisplayName if using AddSAM switch
+    if ($AddSAM) {
+        $tenantId = $samConfig.MSPTenantId
+        $appId = $samConfig.ApplicationId
+        $appSecret = $samConfig.ApplicationSecret
+        $samDisplayName = $samConfig.SAMDisplayName
+    }
     
+    # Validate required parameters if not using AddSAM
+    if (-not $AddSAM -and (-not $tenantId -or -not $appId)) {
+        Write-Output "Error: When not using -AddSAM, both -tenantId and -appId parameters are required"
+        return
+    }
+
     try {
         
         if ($AllCustomers) {
@@ -106,8 +133,16 @@ function Invoke-AppConsentFlow {
     # Get authorization code if not already present
     if (-not $script:authCode) {
         try {
-            $script:authCode = Get-AuthorizationCode -tenantId $tenantId -appId $appId -redirectUri $redirectUri -scope $scope
-            Write-Output "Authorization Code obtained successfully: $($script:authCode.Substring(0, 10))..."
+            $authParams = @{
+                tenantId     = $tenantId
+                appId        = $appId
+                appSecret    = $appSecret
+                redirectUri  = $redirectUri
+                scope        = $scope
+            }
+            $script:authCode = Get-SAMAuthorizationCode @authParams
+            
+            Write-Output "Authorization Code obtained successfully"
         }
         catch {
             Write-Output "Error obtaining authorization code: $_"
@@ -116,7 +151,7 @@ function Invoke-AppConsentFlow {
     }
 
     $headers = @{
-        Authorization = "Bearer $($script:authCode)"
+        Authorization = $script:authCode.Authorization  # Using the Authorization property directly
         'Accept'      = 'application/json'
     }
 
@@ -125,7 +160,6 @@ function Invoke-AppConsentFlow {
         $currentTenant = $_
         Write-Output "Processing tenant: $($currentTenant.Value)"
 
-        $uri = "https://api.partnercenter.microsoft.com/v1/customers/$($currentTenant.Key)/applicationconsents"
         $body = @{
             applicationGrants = @(
                 @{
@@ -137,12 +171,14 @@ function Invoke-AppConsentFlow {
                     scope                   = "user_impersonation"
                 }
             )
-            applicationId     = $using:appId
-            displayName       = $currentTenant.Value
+            applicationId     = $appId
+            displayName      = $samDisplayName
         } | ConvertTo-Json -Compress
 
+        $uri = "https://api.partnercenter.microsoft.com/v1/customers/$($currentTenant.Key)/applicationconsents"
+
         try {
-            $response = Invoke-RestMethod -Uri $uri -Headers $using:headers -Method POST -Body $body -ContentType 'application/json' -ErrorAction Stop
+            $response = Invoke-RestMethod -Uri $uri -Headers $headers -Method POST -Body $body -ContentType 'application/json' -ErrorAction Stop
             Write-Output "Successfully processed tenant $($currentTenant.Value)"
             Write-Output $response
         }

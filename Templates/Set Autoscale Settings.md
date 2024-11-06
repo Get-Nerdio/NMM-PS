@@ -57,8 +57,9 @@ $autoScaleParams = @{
 Set-AutoScale @autoScaleParams
 
 ```
-Some other trigger examples are below.
+## Some other trigger examples are below.
 
+### User Driven trigger
 ```powershell
 # User Driven trigger
 $scalingTriggers.Add(@{
@@ -74,8 +75,10 @@ $scalingTriggers.Add(@{
         }
     }
 })
+```
 
-# AvgActiveSessions trigger example
+### AvgActiveSessions trigger example
+```powershell
 $scalingTriggers.Add(@{
     triggerType = "AvgActiveSessions"
     averageActiveSessions = @{

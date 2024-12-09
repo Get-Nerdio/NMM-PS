@@ -80,6 +80,7 @@ function Add-PartnerCenterAccounts {
             Write-Verbose "Getting existing accounts"
             $existingAccounts = Get-Accounts
             $existingTenantIds = $existingAccounts.tenantId
+            Write-Verbose "Found these accounts in NMM: $($existingAccounts)"
 
             # Get Graph token for MSP tenant
             Write-Verbose "Getting Graph token for MSP tenant"
@@ -111,6 +112,7 @@ function Add-PartnerCenterAccounts {
                     Headers = $graphToken
                 }
                 $tenants = Invoke-RestMethod @params
+                Write-Verbose "Found these Tenants `n $($tenants)"
 
                 if ($TenantId) {
                     Write-Verbose "Filtering for specific tenant: $TenantId"

@@ -6,6 +6,8 @@
 
 ### How to use
 
+For bulk enrollment of customers in Partner Center see the documentation in the [Bulk Enroll PartnerCenter.md](Bulk%20Enroll%20PartnerCenter.md) file.
+
 **Setup Config file -> ConfigData.json**
 
 ```json

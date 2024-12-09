@@ -54,7 +54,7 @@ function Invoke-AppConsentFlow {
     param (
         [Parameter(Mandatory = $false, ParameterSetName = 'Specific')]
         [Parameter(Mandatory = $false, ParameterSetName = 'All')]
-        [string]$tenantId,
+        [string]$tenantId, #MSP TenantId
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Specific')]
         [Parameter(Mandatory = $false, ParameterSetName = 'All')]

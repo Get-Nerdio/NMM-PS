@@ -1,0 +1,14 @@
+{
+    "BaseUri": "your-nerdio-base-uri",
+    "TenantId": "your-nerdio-hosted-tenant-id",
+    "ClientId": "your-nerdio-client-id", 
+    "Scope": "your-nerdio-scope",
+    "ClientSecret": "your-nerdio-client-secret",
+    "SAM": {
+        "SAMDisplayName": "your-sam-display-name",
+        "ApplicationId": "your-application-id",
+        "ApplicationSecret": "your-application-secret",
+        "MSPTenantId": "your-msp-tenant-id",
+        "RefreshToken": "your-refresh-token"
+    }
+}

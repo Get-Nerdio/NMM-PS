@@ -1,4 +1,3 @@
-ConfigData.json
 ConfigData-Backup.json
 NMM-API-Swagger.json
 Test-File.ps1
@@ -8,3 +7,5 @@ Invoke-ModuleUpdate.ps1
 WorkBench.ps1
 .DS_Store
 Todo.md
+Invoke-HiddenApiRequest.ps1
+.gitignore

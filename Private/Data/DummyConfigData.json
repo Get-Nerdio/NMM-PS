@@ -1,7 +1,14 @@
 {
-    "BaseUri": "https://api.yournmmdomain.com",
-    "TenantId": "your-tenant-id",
-    "ClientId": "your-client-id",
-    "Scope": "111111-111-1111-11111-1111111111/.default",
-    "Secret": "your-secret"
+    "BaseUri": "your-nerdio-base-uri",
+    "TenantId": "your-nerdio-hosted-tenant-id",
+    "ClientId": "your-nerdio-client-id", 
+    "Scope": "your-nerdio-scope",
+    "ClientSecret": "your-nerdio-client-secret",
+    "SAM": {
+        "SAMDisplayName": "your-sam-display-name",
+        "ApplicationId": "your-application-id",
+        "ApplicationSecret": "your-application-secret",
+        "MSPTenantId": "your-msp-tenant-id",
+        "RefreshToken": "your-refresh-token"
+    }
 }

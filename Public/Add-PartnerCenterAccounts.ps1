@@ -6,12 +6,16 @@ function Add-PartnerCenterAccounts {
 
         [Parameter(Mandatory = $true, ParameterSetName = 'KeyVault')]
         [Parameter(Mandatory = $true, ParameterSetName = 'KeyVaultCSV')]
-        [ValidateSet('KeyVault')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'SAMConfig')]
+        [ValidateSet('KeyVault', 'ConfigFile', 'SAMConfig')]
         [string]$CredentialSource = 'ConfigFile',
 
         [Parameter(Mandatory = $true, ParameterSetName = 'KeyVault')]
         [Parameter(Mandatory = $true, ParameterSetName = 'KeyVaultCSV')]
         [string]$KeyVaultName,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'SAMConfig')]
+        [PSObject]$SAMCredentials,
 
         [Parameter()]
         [switch]$Force,
@@ -20,7 +24,7 @@ function Add-PartnerCenterAccounts {
         [string[]]$ExcludeTenants,
 
         [Parameter()]
-        [int]$ThrottleLimit = 5,
+        [int]$ThrottleLimit = 4,
 
         [Parameter()]
         [ValidateSet('NewADDS', 'ExistingADDS', 'ExistingADFSFed', 'AzureAD')]
@@ -50,11 +54,16 @@ function Add-PartnerCenterAccounts {
         
         # Get SAM credentials
         try {
-            $samCredentials = if ($CredentialSource -eq 'KeyVault') {
-                Get-SecureApplicationModel -Source KeyVault -KeyVaultName $KeyVaultName
-            }
-            else {
-                Get-SecureApplicationModel -Source ConfigFile
+            $samCredentials = switch ($CredentialSource) {
+                'KeyVault' { 
+                    Get-SecureApplicationModel -Source KeyVault -KeyVaultName $KeyVaultName 
+                }
+                'SAMConfig' { 
+                    $SAMCredentials 
+                }
+                default { 
+                    Get-SecureApplicationModel -Source ConfigFile 
+                }
             }
         }
         catch {
@@ -72,6 +81,20 @@ function Add-PartnerCenterAccounts {
             endpointManagedCloudPc    = $EnableEndpointManagedCloudPC
             endpointManagedWithIntune = $EnableEndpointManagedWithIntune
         }
+
+        # Ensure all necessary variables are initialized
+        if (-not $samCredentials) {
+            throw "SAM credentials are not initialized."
+        }
+
+        $applicationId = $samCredentials.ApplicationId
+        $applicationSecret = $samCredentials.ApplicationSecret
+        $refreshToken = $samCredentials.RefreshToken
+
+        if (-not $applicationId -or -not $applicationSecret -or -not $refreshToken) {
+            throw "One or more SAM credential components are not initialized."
+        }
+
     }
 
     process {
@@ -146,8 +169,14 @@ function Add-PartnerCenterAccounts {
                 return
             }
 
-            # Process tenants using ForEach-Object
-            $tenantsToProcess | ForEach-Object {
+            
+            $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\NMM-ps.psm1'
+
+            $tenantsToProcess | ForEach-Object -ThrottleLimit $ThrottleLimit -Parallel {
+                # Import the module in the parallel runspace
+                Import-Module -Name $using:modulePath -Force
+               
+
                 $tenant = $_
                 $result = [PSCustomObject]@{
                     TenantId = $tenant.customerId
@@ -160,9 +189,9 @@ function Add-PartnerCenterAccounts {
                     # Get Graph token for the tenant
                     $graphCustomerTokenParams = @{
                         TenantId          = $tenant.customerId
-                        ApplicationSecret = $samCredentials.ApplicationSecret
-                        ApplicationId     = $samCredentials.ApplicationId 
-                        RefreshToken      = $samCredentials.RefreshToken
+                        ApplicationSecret = $using:applicationSecret
+                        ApplicationId     = $using:applicationId
+                        RefreshToken      = $using:refreshToken
                         Scope             = 'https://graph.microsoft.com/Directory.AccessAsUser.All'
                     }
 
@@ -171,9 +200,9 @@ function Add-PartnerCenterAccounts {
                     # Get Azure token for the tenant
                     $azureTokenParams = @{
                         TenantId          = $tenant.customerId
-                        ApplicationSecret = $samCredentials.ApplicationSecret
-                        ApplicationId     = $samCredentials.ApplicationId 
-                        RefreshToken      = $samCredentials.RefreshToken
+                        ApplicationSecret = $using:applicationSecret
+                        ApplicationId     = $using:applicationId
+                        RefreshToken      = $using:refreshToken
                     }
                     $azureToken = Connect-AzureApiSAM @azureTokenParams
 
@@ -182,9 +211,9 @@ function Add-PartnerCenterAccounts {
                         azureAccessToken         = $azureToken.Authorization.Replace("Bearer ", "")
                         graphAccessToken         = $graphCustomerToken.Authorization.Replace("Bearer ", "")
                         companyName              = $tenant.displayName
-                        activeDirectoryType      = $ActiveDirectoryType
-                        limitedAccessEnabled     = $LimitedAccessEnabled
-                        desktopDeploymentOptions = $deploymentOptions
+                        activeDirectoryType      = $using:ActiveDirectoryType
+                        limitedAccessEnabled     = $using:LimitedAccessEnabled
+                        desktopDeploymentOptions = $using:deploymentOptions
                     }
 
                     $response = Invoke-APIRequest -Method 'POST' -Endpoint 'accountprovisioning/LinkTenant' -Body $body
@@ -195,9 +224,8 @@ function Add-PartnerCenterAccounts {
                     $result.Error = $_.Exception.Message
                 }
 
-                $result
-            } | ForEach-Object {
-                $results.Add($_)
+                # Add each result to the results collection
+                ($using:results).Add($result)
             }
         }
         catch {

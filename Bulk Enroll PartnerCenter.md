@@ -56,7 +56,7 @@ Once all prerequisites are met, you can use the Add-NerdioPartnerCenterCustomer 
 Command for adding all customers in Partner Center (if GDAP roles are assigned properly):
 ```powershell
 Import-Module NMM-PS
-Add-NerdioPartnerCenterCustomer -Verbose
+Add-PartnerCenterAccounts -Verbose
 ```
 Command for adding a single customer to the Partner Center:
 
@@ -66,7 +66,7 @@ $customers = [PSCustomObject]@{
     displayName = "Skrok Lab Tenant 2"
 }
 Import-Module NMM-PS
-Add-NerdioPartnerCenterCustomer -Customers $customers -Verbose
+Add-PartnerCenterAccounts -Customers $customers -Verbose
 ```
 - Tip import the EasySAM and NMM-PS module in the same powershell session to make sure the global:SAMConfig variable is available. that way you can onboard all customers with you new app registration with the following command:
 

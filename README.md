@@ -6,6 +6,13 @@
 
 ### How to use
 
+1. Manually download the zip from this repository and extract it to a folder of your choice.
+2. Or run the following command in a Powershell 7.4+ terminal: ``` iex ($(irm https://raw.githubusercontent.com/Get-Nerdio/NMM-PS/main/Install.ps1?v=1)) ```
+
+**Keep in mind that this will extract the module to the current directory and import it.**
+
+(Module will be available in the near future on the PowerShell Gallery)
+
 For bulk enrollment of customers in Partner Center see the documentation in the [Bulk Enroll PartnerCenter.md](Bulk%20Enroll%20PartnerCenter.md) file.
 
 **Setup Config file -> ConfigData.json**

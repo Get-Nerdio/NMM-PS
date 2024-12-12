@@ -66,7 +66,7 @@ $customer = [PSCustomObject]@{
     displayName = "Skrok Lab Tenant 2"
 }
 Import-Module NMM-PS
-Add-PartnerCenterAccounts -Tenantid $customer -Verbose
+Add-PartnerCenterAccounts -Tenantid $customer.customerId -Verbose
 ```
 - Tip import the EasySAM and NMM-PS module in the same powershell session to make sure the global:SAMConfig variable is available. that way you can onboard all customers with you new app registration with the following command:
 

@@ -1,6 +1,6 @@
 # Define the GitHub repository URL
 $repoUrl = "https://github.com/Get-Nerdio/NMM-PS"
-$zipUrl = "$repoUrl/refs/heads/main.zip"
+$zipUrl = "$repoUrl/archive/refs/heads/main.zip"
 
 # Current directory where the script is run
 $currentDir = Get-Location

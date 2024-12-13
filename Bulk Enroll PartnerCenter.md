@@ -48,7 +48,7 @@ This function will allow you to bulk enroll customers from Partner Center to the
 
 ## How to use
 
-Once all prerequisites are met, you can use the Add-NerdioPartnerCenterCustomer cmdlet to add a customer to the Partner Center.
+Once all prerequisites are met, you can use the Add-PartnerCenterAccounts cmdlet to add a customer to the Partner Center.
 
 - Next import the NMM-PS module - `.\Import-Module NMM-PS.psm1`
 - Run the following command to add the customers to the Partner Center.
@@ -68,7 +68,6 @@ $customer = [PSCustomObject]@{
 Import-Module NMM-PS
 Add-PartnerCenterAccounts -Tenantid $customer.customerId -Verbose
 ```
-- Tip import the EasySAM and NMM-PS module in the same powershell session to make sure the global:SAMConfig variable is available. that way you can onboard all customers with you new app registration with the following command:
 
 ```powershell
 Add-PartnerCenterAccounts -CredentialSource SAMConfig -SAMCredentials $samconfig -verbose

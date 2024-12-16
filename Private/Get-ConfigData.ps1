@@ -10,7 +10,16 @@ function Get-ConfigData {
             $dataFolderPath = Join-Path -Path $baseDirectory -ChildPath "Data"
             Write-Verbose "Data Folder Path: $dataFolderPath"
 
-            $configDataFilePath = Join-Path -Path $dataFolderPath -ChildPath "ConfigData.json"
+            # Determine which config file to use based on environment variable
+            $configFileName = if ($env:NMM_DEV_MODE -eq 'true') {
+                Write-Verbose "Using development configuration"
+                "ConfigData-Local.json"
+            } else {
+                Write-Verbose "Using production configuration"
+                "ConfigData.json"
+            }
+
+            $configDataFilePath = Join-Path -Path $dataFolderPath -ChildPath $configFileName
             Write-Verbose "Config Data File Path: $configDataFilePath"
 
             if (Test-Path -Path $configDataFilePath) {
@@ -18,7 +27,7 @@ function Get-ConfigData {
                 return $jsonData
             }
             else {
-                throw "ConfigData.json was not found at the path: $configDataFilePath"
+                throw "Configuration file was not found at the path: $configDataFilePath"
             }
         }
         else {

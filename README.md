@@ -2,7 +2,7 @@
 
 # NMM-PS Module
 
-## This module is in beta status and is not yet available on the PowerShell Gallery, or suitable for production use, use at your own risk.
+## This module is not yet available on the PowerShell Gallery, use at your own risk.
 
 ### How to use
 

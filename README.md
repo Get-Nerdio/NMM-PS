@@ -13,9 +13,12 @@
 
 (Module will be available in the near future on the PowerShell Gallery)
 
-For bulk enrollment of customers in Partner Center see the documentation in the [Bulk Enroll PartnerCenter.md](Bulk%20Enroll%20PartnerCenter.md) file.
+## Quick start how to setup and use the API
 
-**Setup Config file -> ConfigData.json**
+- Getting started with the NMM API check the official docs here [NMM API Docs](https://nmmhelp.getnerdio.com/hc/en-us/articles/26125597051277-Nerdio-Manager-Distributor-API-Getting-Started)
+- Make sure you save the API credentials here: Private/Data/ConfigData.json
+
+  **Setup Config file -> ConfigData.json**
 
 ```json
 {
@@ -26,9 +29,9 @@ For bulk enrollment of customers in Partner Center see the documentation in the 
     "Secret": "your-secret"
 }
 ```
-More details will be provided in the future..
+More details will be provided in the future.. like better credential storage in Azurekeyvault
 
-
+For bulk enrollment of customers in Partner Center see the documentation in the [Bulk Enroll PartnerCenter.md](Bulk%20Enroll%20PartnerCenter.md) file.
 
 
 ### What You Can Find Here

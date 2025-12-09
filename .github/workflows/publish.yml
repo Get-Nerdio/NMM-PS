@@ -21,11 +21,6 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Install NuGet provider
-        shell: pwsh
-        run: |
-          Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope CurrentUser
-
       - name: Prepare module for publishing
         shell: pwsh
         run: |

@@ -21,7 +21,7 @@
     GUID                   = '1af1a25e-ccc5-4824-95a6-8373df03d473'
 
     # Author of this module
-    Author                 = 'skolte'
+    Author                 = 'Jan Scholte'
 
     # Company or vendor of this module
     CompanyName            = 'Nerdio'

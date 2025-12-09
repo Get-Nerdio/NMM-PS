@@ -9,3 +9,5 @@ WorkBench.ps1
 Todo.md
 Invoke-HiddenApiRequest.ps1
 .gitignore
+ConfigData.json
+Claude.md

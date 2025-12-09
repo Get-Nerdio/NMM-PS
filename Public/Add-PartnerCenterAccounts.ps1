@@ -101,7 +101,7 @@ function Add-PartnerCenterAccounts {
         try {
             # Get existing accounts first
             Write-Verbose "Getting existing accounts"
-            $existingAccounts = Get-Accounts
+            $existingAccounts = Get-NMMAccount
             $existingTenantIds = $existingAccounts.tenantId
             Write-Verbose "Found these accounts in NMM: $($existingAccounts)"
 

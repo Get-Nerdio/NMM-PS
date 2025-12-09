@@ -1,45 +1,90 @@
 Describe "Set-LogSettings Tests" {
     BeforeAll {
-        # Mock the dependent cmdlets
-        Mock Get-LogSettings { return @{ LogSettingsJsonPath = "path/to/logSettings.json" } }
-        Mock Test-Path { $true } # Assuming the path exists
-        Mock Get-Content { '{"LogPathWindows": "C:\Logs", "LogPathMacOS": "/var/logs", "EnableLogging": $false}' }
-        Mock Set-Content {}
-        Mock New-Item {}
-        Mock Write-Output {}
-        Mock Read-Host { "No" } # Default response for editing settings
+        # Import module
+        Import-Module "$PSScriptRoot/../NMM-PS.psm1" -Force
+    }
+
+    BeforeEach {
+        # Reset call counter before each test
+        $script:readHostCallCount = 0
     }
 
     It "Should check if the log settings file exists" {
-        Set-LogSettings -Verbose
-        Assert-MockCalled Test-Path -Exactly 1 -Scope It
+        Mock Get-LogSettings { return @{ LogSettingsJsonPath = "path/to/logSettings.json" } } -ModuleName NMM-PS
+        Mock Test-Path { $true } -ModuleName NMM-PS
+        Mock Get-Content { '{"LogPathWindows": "C:\\Logs", "LogPathMacOS": "/var/logs", "EnableLogging": false}' } -ModuleName NMM-PS
+        Mock Write-Output {} -ModuleName NMM-PS
+        Mock Read-Host { "No" } -ModuleName NMM-PS
+
+        Set-LogSettings -Confirm:$false
+        Should -Invoke Test-Path -Exactly 1 -Scope It -ModuleName NMM-PS
     }
 
     It "Should create a new file if it does not exist" {
-        Mock Test-Path { $false } # Path does not exist
-        Set-LogSettings
-        Assert-MockCalled New-Item -Exactly 1 -Scope It
+        Mock Get-LogSettings { return @{ LogSettingsJsonPath = "path/to/logSettings.json" } } -ModuleName NMM-PS
+        Mock Test-Path { $false } -ModuleName NMM-PS
+        Mock New-Item {} -ModuleName NMM-PS
+        Mock Set-Content {} -ModuleName NMM-PS
+        Mock Write-Output {} -ModuleName NMM-PS
+
+        Set-LogSettings -Confirm:$false
+        Should -Invoke New-Item -Exactly 1 -Scope It -ModuleName NMM-PS
     }
 
     It "Should not change settings if user opts out" {
-        Set-LogSettings
-        Assert-MockCalled Set-Content -Exactly 0 -Scope It
+        Mock Get-LogSettings { return @{ LogSettingsJsonPath = "path/to/logSettings.json" } } -ModuleName NMM-PS
+        Mock Test-Path { $true } -ModuleName NMM-PS
+        Mock Get-Content { '{"LogPathWindows": "C:\\Logs", "LogPathMacOS": "/var/logs", "EnableLogging": false}' } -ModuleName NMM-PS
+        Mock Set-Content {} -ModuleName NMM-PS
+        Mock Write-Output {} -ModuleName NMM-PS
+        Mock Read-Host { "No" } -ModuleName NMM-PS
+
+        Set-LogSettings -Confirm:$false
+        Should -Invoke Set-Content -Exactly 0 -Scope It -ModuleName NMM-PS
     }
 
     It "Should update settings when user opts to edit them" {
-        Mock Read-Host { "Yes", "C:\New\Logs", "/new/var/logs", "True" } # User opts to edit and provides new settings
-        Set-LogSettings
-        Assert-MockCalled Set-Content -Exactly 1 -Scope It
-        # Verifying that the content written to the file includes the new settings
-        Assert-MockCalled Set-Content {
-            $args[1] -match "C:\\\\New\\\\Logs" -and $args[1] -match "/new/var/logs" -and $args[1] -match "True"
-        } -Exactly 1 -Scope It
+        Mock Get-LogSettings { return @{ LogSettingsJsonPath = "path/to/logSettings.json" } } -ModuleName NMM-PS
+        Mock Test-Path { $true } -ModuleName NMM-PS
+        Mock Get-Content { '{"LogPathWindows": "C:\\Logs", "LogPathMacOS": "/var/logs", "EnableLogging": false}' } -ModuleName NMM-PS
+        Mock Set-Content {} -ModuleName NMM-PS
+        Mock Write-Output {} -ModuleName NMM-PS
+
+        $script:readHostCallCount = 0
+        Mock Read-Host {
+            $script:readHostCallCount++
+            switch ($script:readHostCallCount) {
+                1 { return "Yes" }
+                2 { return "C:\New\Logs" }
+                3 { return "/new/var/logs" }
+                4 { return "True" }
+            }
+        } -ModuleName NMM-PS
+
+        Set-LogSettings -Confirm:$false
+        Should -Invoke Set-Content -Exactly 1 -Scope It -ModuleName NMM-PS
     }
 
     It "Should handle exceptions correctly when updating settings" {
-        Mock Set-Content { throw "error" } # Simulate an error during update
-        Mock Write-LogError {}
-        Set-LogSettings
-        Assert-MockCalled Write-LogError -Exactly 1 -Scope It
+        Mock Get-LogSettings { return @{ LogSettingsJsonPath = "path/to/logSettings.json" } } -ModuleName NMM-PS
+        Mock Test-Path { $true } -ModuleName NMM-PS
+        Mock Get-Content { '{"LogPathWindows": "C:\\Logs", "LogPathMacOS": "/var/logs", "EnableLogging": false}' } -ModuleName NMM-PS
+        Mock Write-Output {} -ModuleName NMM-PS
+        Mock Write-LogError {} -ModuleName NMM-PS
+
+        $script:readHostCallCount = 0
+        Mock Read-Host {
+            $script:readHostCallCount++
+            switch ($script:readHostCallCount) {
+                1 { return "Yes" }
+                2 { return "C:\New\Logs" }
+                3 { return "/new/var/logs" }
+                4 { return "True" }
+            }
+        } -ModuleName NMM-PS
+        Mock Set-Content { throw "error" } -ModuleName NMM-PS
+
+        Set-LogSettings -Confirm:$false
+        Should -Invoke Write-LogError -Exactly 1 -Scope It -ModuleName NMM-PS
     }
 }

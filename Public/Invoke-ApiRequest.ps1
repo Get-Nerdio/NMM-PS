@@ -17,7 +17,11 @@ function Invoke-APIRequest {
         [string]$Filter, # Value for the query parameter
 
         [Parameter(ParameterSetName = 'Hashtable')]
-        [Hashtable]$QueryParameters  # Hashtable for multiple query parameters
+        [Hashtable]$QueryParameters,  # Hashtable for multiple query parameters
+
+        [Parameter()]
+        [ValidateSet('v1', 'v1-beta')]
+        [string]$ApiVersion = 'v1'  # API version to use
     )
 
     try {
@@ -33,8 +37,9 @@ function Invoke-APIRequest {
             'Authorization' = "Bearer $($token.AccessToken)"
         }
 
-        # Initialize URI
-        $uri = "$($token.APIUrl)/$Endpoint"
+        # Initialize URI - support both v1 and v1-beta
+        $baseUrl = $token.APIUrl -replace '/rest-api/v1$', ''
+        $uri = "$baseUrl/rest-api/$ApiVersion/$Endpoint"
 
         # Determine how to append query parameters based on method used
         if ($PSCmdlet.ParameterSetName -eq 'Simple' -and $Query -and $Filter) {

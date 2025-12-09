@@ -1,0 +1,389 @@
+/* ==========================================================================
+   NMM-PS Documentation - Nerdio Brand Styling
+   Colors: Navy Orbit #042838, Nerdio Blue #1E9DB8, Green Galaxy #CDFF4E
+   Font: Poppins
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   CSS Custom Properties (Light Mode)
+   -------------------------------------------------------------------------- */
+:root,
+[data-md-color-scheme="default"] {
+  /* Primary: Navy Orbit */
+  --md-primary-fg-color: #042838;
+  --md-primary-fg-color--light: #0a4a5c;
+  --md-primary-fg-color--dark: #021620;
+
+  /* Accent: Nerdio Blue */
+  --md-accent-fg-color: #1E9DB8;
+  --md-accent-fg-color--transparent: rgba(30, 157, 184, 0.1);
+
+  /* Typography */
+  --md-typeset-a-color: #1E9DB8;
+  --md-default-fg-color: #042838;
+
+  /* Code blocks */
+  --md-code-bg-color: #f5f7f9;
+  --md-code-fg-color: #042838;
+  --md-code-hl-color: rgba(30, 157, 184, 0.1);
+
+  /* Syntax highlighting */
+  --md-code-hl-keyword-color: #042838;
+  --md-code-hl-function-color: #1E9DB8;
+  --md-code-hl-string-color: #0a6e4e;
+  --md-code-hl-number-color: #1E9DB8;
+  --md-code-hl-comment-color: #6b7280;
+  --md-code-hl-variable-color: #042838;
+  --md-code-hl-operator-color: #042838;
+}
+
+/* --------------------------------------------------------------------------
+   CSS Custom Properties (Dark Mode)
+   -------------------------------------------------------------------------- */
+[data-md-color-scheme="slate"] {
+  /* Primary: Nerdio Blue (lighter for dark mode) */
+  --md-primary-fg-color: #1E9DB8;
+  --md-primary-fg-color--light: #5eb8cc;
+  --md-primary-fg-color--dark: #157a91;
+
+  /* Accent: Green Galaxy */
+  --md-accent-fg-color: #CDFF4E;
+  --md-accent-fg-color--transparent: rgba(205, 255, 78, 0.1);
+
+  /* Typography */
+  --md-typeset-a-color: #5eb8cc;
+
+  /* Code blocks */
+  --md-code-bg-color: #1a2632;
+  --md-code-fg-color: #e0e7ee;
+  --md-code-hl-color: rgba(30, 157, 184, 0.2);
+
+  /* Syntax highlighting */
+  --md-code-hl-keyword-color: #5eb8cc;
+  --md-code-hl-function-color: #CDFF4E;
+  --md-code-hl-string-color: #7ee787;
+  --md-code-hl-number-color: #79c0ff;
+  --md-code-hl-comment-color: #8b949e;
+  --md-code-hl-variable-color: #ffa657;
+  --md-code-hl-operator-color: #ff7b72;
+
+  /* Dark mode header stays navy */
+  --md-default-bg-color: #0d1117;
+}
+
+/* --------------------------------------------------------------------------
+   Header & Navigation
+   -------------------------------------------------------------------------- */
+.md-header {
+  background-color: #042838 !important;
+}
+
+.md-header__title {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.md-tabs {
+  background-color: #042838 !important;
+}
+
+.md-tabs__link {
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+.md-tabs__link--active,
+.md-tabs__link:hover {
+  opacity: 1;
+}
+
+/* Search */
+.md-search__input {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.md-search__input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* --------------------------------------------------------------------------
+   Typography - Poppins Font
+   -------------------------------------------------------------------------- */
+body,
+.md-typeset {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 400;
+  line-height: 1.7;
+  letter-spacing: 0.2px;
+}
+
+h1, h2, h3, h4, h5, h6,
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h4,
+.md-typeset h5,
+.md-typeset h6 {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: var(--md-default-fg-color);
+}
+
+.md-typeset h1 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--md-accent-fg-color);
+  padding-bottom: 0.5rem;
+}
+
+.md-typeset h2 {
+  font-size: 1.6rem;
+  margin-top: 2rem;
+}
+
+.md-typeset h3 {
+  font-size: 1.3rem;
+}
+
+/* --------------------------------------------------------------------------
+   Links
+   -------------------------------------------------------------------------- */
+.md-typeset a {
+  color: var(--md-typeset-a-color);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.md-typeset a:hover {
+  border-bottom-color: var(--md-typeset-a-color);
+}
+
+/* --------------------------------------------------------------------------
+   Code Blocks
+   -------------------------------------------------------------------------- */
+.md-typeset code,
+.md-typeset pre code {
+  font-family: 'Roboto Mono', 'Consolas', 'Monaco', monospace;
+  font-size: 0.85rem;
+  border-radius: 4px;
+}
+
+.md-typeset pre {
+  border-radius: 8px;
+  border-left: 4px solid #1E9DB8;
+}
+
+/* PowerShell specific styling */
+.md-typeset .language-powershell,
+.md-typeset .highlight.language-powershell {
+  border-left-color: #1E9DB8;
+}
+
+/* Copy button styling */
+.md-clipboard {
+  color: var(--md-default-fg-color--light);
+}
+
+.md-clipboard:hover {
+  color: var(--md-accent-fg-color);
+}
+
+/* --------------------------------------------------------------------------
+   Tables
+   -------------------------------------------------------------------------- */
+.md-typeset table:not([class]) {
+  border-collapse: collapse;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.md-typeset table:not([class]) th {
+  background-color: #042838;
+  color: white;
+  font-weight: 600;
+  padding: 12px 16px;
+  text-align: left;
+}
+
+.md-typeset table:not([class]) td {
+  padding: 10px 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.md-typeset table:not([class]) tr:hover td {
+  background-color: var(--md-accent-fg-color--transparent);
+}
+
+[data-md-color-scheme="slate"] .md-typeset table:not([class]) th {
+  background-color: #1E9DB8;
+  color: #042838;
+}
+
+[data-md-color-scheme="slate"] .md-typeset table:not([class]) td {
+  border-bottom-color: #30363d;
+}
+
+/* --------------------------------------------------------------------------
+   Admonitions
+   -------------------------------------------------------------------------- */
+.md-typeset .admonition,
+.md-typeset details {
+  border-radius: 8px;
+  border-left-width: 4px;
+}
+
+.md-typeset .admonition.note,
+.md-typeset details.note {
+  border-left-color: #1E9DB8;
+}
+
+.md-typeset .admonition.info,
+.md-typeset details.info {
+  border-left-color: #1E9DB8;
+}
+
+.md-typeset .admonition.tip,
+.md-typeset details.tip {
+  border-left-color: #CDFF4E;
+}
+
+.md-typeset .admonition.warning,
+.md-typeset details.warning {
+  border-left-color: #f59e0b;
+}
+
+.md-typeset .admonition.danger,
+.md-typeset details.danger {
+  border-left-color: #ef4444;
+}
+
+/* --------------------------------------------------------------------------
+   Navigation Sidebar
+   -------------------------------------------------------------------------- */
+.md-nav__title {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+}
+
+.md-nav__link {
+  font-size: 0.85rem;
+}
+
+.md-nav__link--active {
+  font-weight: 600;
+  color: var(--md-accent-fg-color);
+}
+
+/* --------------------------------------------------------------------------
+   Buttons
+   -------------------------------------------------------------------------- */
+.md-button {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  border-radius: 6px;
+  text-transform: none;
+  letter-spacing: 0.3px;
+  transition: all 0.2s ease;
+}
+
+.md-button--primary {
+  background-color: #042838;
+  border-color: #042838;
+}
+
+.md-button--primary:hover {
+  background-color: #0a4a5c;
+  border-color: #0a4a5c;
+}
+
+/* --------------------------------------------------------------------------
+   Footer
+   -------------------------------------------------------------------------- */
+.md-footer {
+  background-color: #042838;
+}
+
+.md-footer-meta {
+  background-color: #021620;
+}
+
+/* --------------------------------------------------------------------------
+   Custom Badges
+   -------------------------------------------------------------------------- */
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-tier1 {
+  background-color: #1E9DB8;
+  color: white;
+}
+
+.badge-tier2 {
+  background-color: #A795C7;
+  color: white;
+}
+
+.badge-tier3 {
+  background-color: #CDFF4E;
+  color: #042838;
+}
+
+.badge-beta {
+  background-color: #f59e0b;
+  color: white;
+}
+
+/* --------------------------------------------------------------------------
+   Cmdlet Reference Cards
+   -------------------------------------------------------------------------- */
+.cmdlet-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  transition: box-shadow 0.2s ease;
+}
+
+.cmdlet-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+[data-md-color-scheme="slate"] .cmdlet-card {
+  border-color: #30363d;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive Adjustments
+   -------------------------------------------------------------------------- */
+@media screen and (max-width: 76.1875em) {
+  .md-typeset h1 {
+    font-size: 1.8rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Print Styles
+   -------------------------------------------------------------------------- */
+@media print {
+  .md-header,
+  .md-sidebar,
+  .md-footer {
+    display: none;
+  }
+
+  .md-typeset h1 {
+    border-bottom: 2px solid #042838;
+  }
+}

@@ -1,0 +1,179 @@
+# Publish to PowerShell Gallery on release
+# Requires PSGALLERY_API_KEY secret configured in repository settings
+
+name: Publish to PowerShell Gallery
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g., 1.0.0)'
+        required: false
+        type: string
+
+jobs:
+  publish:
+    name: Publish Module
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install NuGet provider
+        shell: pwsh
+        run: |
+          Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope CurrentUser
+
+      - name: Prepare module for publishing
+        shell: pwsh
+        run: |
+          # Determine version from release tag or manual input
+          $version = '${{ github.event.release.tag_name }}' -replace '^v', ''
+          if ([string]::IsNullOrEmpty($version)) {
+            $version = '${{ inputs.version }}'
+          }
+          if ([string]::IsNullOrEmpty($version)) {
+            Write-Error "No version specified. Use a release tag (v1.0.0) or manual input."
+            exit 1
+          }
+          Write-Output "Publishing version: $version"
+
+          # Get all public functions to export
+          $publicFunctions = Get-ChildItem -Path "./Public/*.ps1" -ErrorAction SilentlyContinue |
+            ForEach-Object { $_.BaseName }
+
+          Write-Output "Found $($publicFunctions.Count) public functions to export:"
+          $publicFunctions | ForEach-Object { Write-Output "  - $_" }
+
+          # Read and update manifest
+          $manifestPath = "./NMM-PS.psd1"
+          $manifestContent = Get-Content $manifestPath -Raw
+
+          # Update ModuleVersion
+          $manifestContent = $manifestContent -replace "ModuleVersion\s*=\s*'[^']*'", "ModuleVersion = '$version'"
+
+          # Update FunctionsToExport with actual function names
+          $functionList = ($publicFunctions | ForEach-Object { "'$_'" }) -join ", "
+          $manifestContent = $manifestContent -replace "FunctionsToExport\s*=\s*@\([^)]*\)", "FunctionsToExport = @($functionList)"
+
+          # Update ProjectUri
+          $manifestContent = $manifestContent -replace "# ProjectUri = ''", "ProjectUri = 'https://github.com/Get-Nerdio/NMM-PS'"
+
+          # Update LicenseUri (using repo license)
+          $manifestContent = $manifestContent -replace "# LicenseUri = ''", "LicenseUri = 'https://github.com/Get-Nerdio/NMM-PS/blob/main/LICENSE'"
+
+          # Update IconUri if logo exists
+          $manifestContent = $manifestContent -replace "# IconUri = ''", "IconUri = 'https://raw.githubusercontent.com/Get-Nerdio/NMM-PS/main/Docs/assets/logo_dark_theme.png'"
+
+          # Add release notes from GitHub release
+          $releaseNotes = '${{ github.event.release.body }}' -replace "'", "''"
+          if (-not [string]::IsNullOrEmpty($releaseNotes)) {
+            $manifestContent = $manifestContent -replace "# ReleaseNotes = ''", "ReleaseNotes = '$releaseNotes'"
+          }
+
+          # Save updated manifest
+          $manifestContent | Set-Content $manifestPath -NoNewline
+          Write-Output "Updated manifest saved"
+
+          # Verify manifest is valid
+          $manifest = Test-ModuleManifest -Path $manifestPath
+          Write-Output "Manifest validation passed: $($manifest.Name) v$($manifest.Version)"
+
+      - name: Create publish directory
+        shell: pwsh
+        run: |
+          # PowerShell Gallery requires module to be in a folder matching module name
+          $publishPath = "./publish/NMM-PS"
+          New-Item -Path $publishPath -ItemType Directory -Force | Out-Null
+
+          # Copy module files (exclude dev/test files)
+          $excludeItems = @(
+            '.git',
+            '.github',
+            'Tests',
+            'site',
+            'publish',
+            '*.md',
+            '.gitignore',
+            'requirements.txt',
+            'mkdocs.yml',
+            'ConfigData.json',
+            'ConfigData-Local.json',
+            '*.pfx',
+            '*.pem',
+            'Test.ps1',
+            'Test-File.ps1',
+            'WorkBench.ps1',
+            'Install.ps1',
+            'BrowserExtension'
+          )
+
+          # Copy main module files
+          Copy-Item -Path "./NMM-PS.psd1" -Destination $publishPath -Force
+          Copy-Item -Path "./NMM-PS.psm1" -Destination $publishPath -Force
+
+          # Copy Public and Private folders
+          Copy-Item -Path "./Public" -Destination $publishPath -Recurse -Force
+          Copy-Item -Path "./Private" -Destination $publishPath -Recurse -Force
+
+          # Copy help files if they exist
+          if (Test-Path "./en-US") {
+            Copy-Item -Path "./en-US" -Destination $publishPath -Recurse -Force
+          }
+
+          # Remove ConfigData.json from Private/Data if it exists (contains credentials)
+          $configPath = "$publishPath/Private/Data/ConfigData.json"
+          if (Test-Path $configPath) {
+            Remove-Item $configPath -Force
+            Write-Output "Removed ConfigData.json from publish package"
+          }
+
+          # List files to be published
+          Write-Output "Files to publish:"
+          Get-ChildItem $publishPath -Recurse -File | ForEach-Object {
+            Write-Output "  $($_.FullName -replace [regex]::Escape((Get-Location).Path), '')"
+          }
+
+      - name: Publish to PowerShell Gallery
+        shell: pwsh
+        env:
+          PSGALLERY_API_KEY: ${{ secrets.PSGALLERY_API_KEY }}
+        run: |
+          $modulePath = "./publish/NMM-PS"
+
+          # Verify module can be imported
+          Import-Module $modulePath -Force -ErrorAction Stop
+          $module = Get-Module NMM-PS
+          Write-Output "Module loaded: $($module.Name) v$($module.Version)"
+          Write-Output "Exported functions: $($module.ExportedFunctions.Count)"
+
+          # Publish to PowerShell Gallery
+          try {
+            Publish-Module -Path $modulePath -NuGetApiKey $env:PSGALLERY_API_KEY -Verbose
+            Write-Output "✅ Successfully published NMM-PS v$($module.Version) to PowerShell Gallery"
+          }
+          catch {
+            Write-Error "Failed to publish: $_"
+            exit 1
+          }
+
+      - name: Verify publication
+        shell: pwsh
+        run: |
+          # Wait for Gallery to index the new version
+          Start-Sleep -Seconds 30
+
+          # Check if module is available
+          $module = Find-Module -Name NMM-PS -Repository PSGallery -ErrorAction SilentlyContinue
+          if ($module) {
+            Write-Output "✅ Module found on PowerShell Gallery:"
+            Write-Output "   Name: $($module.Name)"
+            Write-Output "   Version: $($module.Version)"
+            Write-Output "   Author: $($module.Author)"
+            Write-Output "   Install: Install-Module -Name NMM-PS"
+          }
+          else {
+            Write-Warning "Module not yet visible on PowerShell Gallery (may take a few minutes to index)"
+          }

@@ -1,9 +1,6 @@
 function Get-NMMInvoice {
-    [CmdletBinding(DefaultParameterSetName = 'None')]
+    [CmdletBinding(DefaultParameterSetName = 'All')]
     Param(
-        [Parameter(ParameterSetName = 'None')]
-        [bool]$All = $True,
-
         [Parameter(ParameterSetName = 'ById', Mandatory = $true)]
         [int]$id,
 
@@ -26,7 +23,7 @@ function Get-NMMInvoice {
 
     Try {
         switch ($PSCmdlet.ParameterSetName) {
-            'None' {
+            'All' {
                 $response = Invoke-APIRequest -Method 'GET' -Endpoint 'invoices'
             }
             'ById' {

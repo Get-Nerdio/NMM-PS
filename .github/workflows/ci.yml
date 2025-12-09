@@ -1,0 +1,135 @@
+# Continuous Integration - Run tests on push and pull requests
+# https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-powershell
+
+name: CI
+
+on:
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'Docs/**'
+      - 'mkdocs.yml'
+      - 'requirements.txt'
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'Docs/**'
+      - 'mkdocs.yml'
+      - 'requirements.txt'
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Display PowerShell version
+        shell: pwsh
+        run: $PSVersionTable
+
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          Install-Module -Name Pester -MinimumVersion 5.0 -Force -Scope CurrentUser
+          Import-Module Pester
+          Get-Module Pester | Select-Object Name, Version
+
+      - name: Validate module manifest
+        shell: pwsh
+        run: |
+          $manifest = Test-ModuleManifest -Path ./NMM-PS.psd1 -ErrorAction Stop
+          Write-Output "Module: $($manifest.Name)"
+          Write-Output "Version: $($manifest.Version)"
+          Write-Output "PowerShell Version Required: $($manifest.PowerShellVersion)"
+
+      - name: Import module
+        shell: pwsh
+        run: |
+          Import-Module ./NMM-PS.psm1 -Force -ErrorAction Stop
+          $module = Get-Module NMM-PS
+          Write-Output "Loaded module: $($module.Name)"
+          Write-Output "Exported functions: $($module.ExportedFunctions.Count)"
+
+          # List all exported functions
+          $module.ExportedFunctions.Keys | Sort-Object | ForEach-Object {
+            Write-Output "  - $_"
+          }
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = "./Tests"
+          $config.Run.Exit = $true
+          $config.TestResult.Enabled = $true
+          $config.TestResult.OutputPath = "./TestResults.xml"
+          $config.TestResult.OutputFormat = "NUnitXml"
+          $config.Output.Verbosity = "Detailed"
+
+          # Check if Tests folder exists and has tests
+          if (Test-Path "./Tests/*.Tests.ps1") {
+            Invoke-Pester -Configuration $config
+          } else {
+            Write-Output "No test files found in ./Tests/"
+            Write-Output "Skipping Pester tests"
+          }
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.os }}
+          path: ./TestResults.xml
+          if-no-files-found: ignore
+
+  analyze:
+    name: Script Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
+          Import-Module PSScriptAnalyzer
+
+      - name: Run PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          # Use project settings file if it exists
+          $settingsPath = "./PSScriptAnalyzerSettings.psd1"
+          $analyzerParams = @{
+            Recurse = $true
+            Severity = @('Warning', 'Error')
+          }
+          if (Test-Path $settingsPath) {
+            $analyzerParams['Settings'] = $settingsPath
+            Write-Output "Using settings from: $settingsPath"
+          }
+
+          $results = @()
+          $results += Invoke-ScriptAnalyzer -Path ./Public @analyzerParams
+          $results += Invoke-ScriptAnalyzer -Path ./Private @analyzerParams
+
+          if ($results) {
+            Write-Output "PSScriptAnalyzer found $($results.Count) issue(s):"
+            $results | Format-Table -AutoSize
+
+            # Fail on errors only, warn on warnings
+            $errors = $results | Where-Object { $_.Severity -eq 'Error' }
+            if ($errors) {
+              Write-Error "PSScriptAnalyzer found $($errors.Count) error(s)"
+              exit 1
+            }
+          } else {
+            Write-Output "✅ PSScriptAnalyzer found no issues"
+          }

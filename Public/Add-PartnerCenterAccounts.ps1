@@ -216,7 +216,7 @@ function Add-PartnerCenterAccounts {
                         desktopDeploymentOptions = $using:deploymentOptions
                     }
 
-                    $response = Invoke-APIRequest -Method 'POST' -Endpoint 'accountprovisioning/LinkTenant' -Body $body
+                    $null = Invoke-APIRequest -Method 'POST' -Endpoint 'accountprovisioning/LinkTenant' -Body $body
                     $result.Status = 'Success'
                 }
                 catch {

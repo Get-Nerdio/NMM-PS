@@ -123,6 +123,7 @@ nav:
     - Installation: getting-started/installation.md
     - Configuration: getting-started/configuration.md
     - Authentication: getting-started/authentication.md
+    - Hidden API (Experimental): getting-started/hidden-api.md
   - Cmdlets:
     - cmdlets/index.md
     - Authentication:

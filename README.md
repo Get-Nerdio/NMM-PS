@@ -4,24 +4,44 @@
 
 PowerShell module for the Nerdio Manager for MSP (NMM) REST API.
 
+[![PowerShell Gallery](https://img.shields.io/powershellgallery/v/NMM-PS?label=PowerShell%20Gallery)](https://www.powershellgallery.com/packages/NMM-PS)
 [![Documentation](https://img.shields.io/badge/docs-Get--Nerdio.github.io%2FNMM--PS-blue)](https://Get-Nerdio.github.io/NMM-PS/)
 [![PowerShell](https://img.shields.io/badge/PowerShell-7.0%2B-blue)](https://github.com/PowerShell/PowerShell)
 
-> **Note:** This module is not yet available on the PowerShell Gallery. Use at your own risk.
+> **Disclaimer:** This is an **unofficial**, community-maintained module created by Nerdio Sales Engineers. It is **not officially supported** by Nerdio. Use at your own risk.
 
 ## Documentation
 
-Full documentation is available at **[https://Get-Nerdio.github.io/NMM-PS/](https://Get-Nerdio.github.io/NMM-PS/)**
+Full documentation: **[https://Get-Nerdio.github.io/NMM-PS/](https://Get-Nerdio.github.io/NMM-PS/)**
+
+---
 
 ## Installation
 
-### Option 1: Quick Install (Recommended)
+### PowerShell Gallery (Recommended)
+
 ```powershell
-iex (irm https://raw.githubusercontent.com/Get-Nerdio/NMM-PS/main/Install.ps1?v=1)
+Install-Module -Name NMM-PS -Scope CurrentUser
 ```
 
-### Option 2: Manual Download
-Download the ZIP from this repository and extract to a folder of your choice.
+### Update Existing Installation
+
+```powershell
+Update-Module -Name NMM-PS
+```
+
+### Alternative: Install from GitHub
+
+```powershell
+# Quick install script
+iex (irm https://raw.githubusercontent.com/Get-Nerdio/NMM-PS/main/Install.ps1)
+
+# Or clone and import manually
+git clone https://github.com/Get-Nerdio/NMM-PS.git
+Import-Module ./NMM-PS/NMM-PS.psm1
+```
+
+---
 
 ## Quick Start
 
@@ -35,7 +55,7 @@ Create `Private/Data/ConfigData.json`:
     "TenantId": "your-tenant-id",
     "ClientId": "your-client-id",
     "Scope": "111111-111-1111-11111-1111111111/.default",
-    "Secret": "your-secret"
+    "ClientSecret": "your-secret"
 }
 ```
 
@@ -44,7 +64,7 @@ See [NMM API Docs](https://nmmhelp.getnerdio.com/hc/en-us/articles/2612559705127
 ### 2. Connect and Use
 
 ```powershell
-Import-Module ./NMM-PS.psm1
+Import-Module NMM-PS
 Connect-NMMApi
 
 # List all accounts
@@ -66,9 +86,6 @@ Get-NMMCommand
 # Filter by category
 Get-NMMCommand -Category HostPool
 
-# Filter by verb
-Get-NMMCommand -Verb Get
-
 # Get as objects for scripting
 Get-NMMCommand -AsObject | Where-Object { $_.Category -eq 'Device' }
 ```
@@ -78,223 +95,77 @@ Get-NMMCommand -AsObject | Where-Object { $_.Category -eq 'Device' }
 ## Authentication Methods
 
 ### Client Secret (Default)
-Configure `Secret` in ConfigData.json and run:
 ```powershell
 Connect-NMMApi
 ```
 
 ### Certificate-Based (Recommended for Production)
-More secure than client secrets. Create and configure a certificate:
-
 ```powershell
-# Create certificate, import to cert store, upload to Azure AD, update config
+# Create certificate, upload to Azure AD, update config
 New-NMMApiCertificate -ExportToCertStore -Upload -UpdateConfig
 
 # Connect using certificate thumbprint
 Connect-NMMApi -CertificateThumbprint "YOUR_THUMBPRINT"
-
-# Or connect using PFX file
-Connect-NMMApi -CertificatePath "./cert.pfx" -CertificatePassword $securePassword
 ```
 
-See the [Authentication Guide](https://Get-Nerdio.github.io/NMM-PS/getting-started/authentication/) for detailed setup instructions.
+See the [Authentication Guide](https://Get-Nerdio.github.io/NMM-PS/getting-started/authentication/) for details.
 
 ---
 
 ## Available Cmdlets
 
-### Account Management
-| Cmdlet | Description |
-|--------|-------------|
-| `Connect-NMMApi` | Authenticate to the NMM API |
-| `Get-NMMAccount` | List all NMM accounts (tenants) |
-| `Get-NMMApiToken` | Get current API token information |
-| `New-NMMApiCertificate` | Create certificate for authentication |
+Run `Get-NMMCommand` for a full list, or see the [cmdlet reference](https://Get-Nerdio.github.io/NMM-PS/cmdlets/).
 
-### Host Pool Management
-| Cmdlet | Description |
-|--------|-------------|
-| `Get-NMMHostPool` | List host pools for an account |
-| `Get-NMMHostPoolSettings` | Get AVD settings for a host pool |
-| `Get-NMMHostPoolAutoscale` | Get autoscale configuration |
-| `Get-NMMHostPoolAD` | Get Active Directory settings |
-| `Get-NMMHostPoolRDP` | Get RDP/device redirection settings |
-| `Get-NMMHostPoolFSLogix` | Get FSLogix profile settings |
-| `Get-NMMHostPoolVMDeployment` | Get VM deployment configuration |
-| `Get-NMMHostPoolTimeout` | Get session timeout settings |
-| `Get-NMMHostPoolTag` | Get Azure resource tags |
-| `Get-NMMHostPoolSchedule` | Get scheduled tasks for host pool |
-| `Get-NMMHostPoolUser` | Get assigned users |
-| `New-NMMHostPool` | Create a new host pool |
-| `Remove-NMMHostPool` | Delete a host pool |
-| `Set-NMMAutoscale` | Configure autoscale settings |
-
-### Host Management
-| Cmdlet | Description |
-|--------|-------------|
-| `Get-NMMHost` | List session hosts in a pool |
-| `Get-NMMHostSchedule` | Get scheduled tasks for a host |
-
-### Desktop Image Management
-| Cmdlet | Description |
-|--------|-------------|
-| `Get-NMMDesktopImage` | List desktop images |
-| `Get-NMMDesktopImageDetail` | Get image details |
-| `Get-NMMDesktopImageLog` | Get image change history |
-| `Get-NMMDesktopImageSchedule` | Get image update schedules |
-| `Get-NMMImageTemplate` | List image templates |
-
-### User & Group Management
-| Cmdlet | Description |
-|--------|-------------|
-| `Get-NMMUser` | Get user details by ID |
-| `Get-NMMUsers` | Search users with filters |
-| `Get-NMMUserMFA` | Get user MFA status |
-| `Get-NMMGroup` | Get group details |
-
-### Session Management
-| Cmdlet | Description |
-|--------|-------------|
-| `Get-NMMHostPoolSession` | List active sessions in pool |
-| `Get-NMMWorkspaceSession` | List sessions in workspace |
-| `Get-NMMWorkspace` | List workspaces |
-
-### Backup & Recovery
-| Cmdlet | Description |
-|--------|-------------|
-| `Get-NMMBackup` | List backup policies |
-| `Get-NMMProtectedItem` | List protected backup items |
-| `Get-NMMRecoveryPoint` | List recovery points |
-
-### Automation & Scheduling
-| Cmdlet | Description |
-|--------|-------------|
-| `Get-NMMScriptedAction` | List scripted actions (`-Scope Account\|Global`) |
-| `Get-NMMScriptedActionSchedule` | Get scripted action schedules |
-| `Get-NMMSchedule` | List schedules (`-Scope Account\|Global`) |
-| `Get-NMMScheduleConfig` | Get schedule configurations |
-| `Get-NMMAutoscaleProfile` | List autoscale profiles (`-Scope Account\|Global`) |
-
-### Device Management (Beta API)
-| Cmdlet | Description |
-|--------|-------------|
-| `Get-NMMDevice` | List managed devices |
-| `Get-NMMDeviceCompliance` | Get device compliance status |
-| `Get-NMMDeviceApp` | List installed apps |
-| `Get-NMMDeviceAppFailure` | List failed app installs |
-| `Get-NMMDeviceHardware` | Get hardware inventory |
-| `Get-NMMDeviceLAPS` | Get local admin password (**Sensitive**) |
-| `Get-NMMDeviceBitLocker` | Get BitLocker keys (**Sensitive**) |
-| `Sync-NMMDevice` | Force Intune sync |
-
-### Infrastructure & Config
-| Cmdlet | Description |
-|--------|-------------|
-| `Get-NMMDirectory` | List Active Directory connections |
-| `Get-NMMFSLogixConfig` | List FSLogix configurations |
-| `Get-NMMEnvironmentVariable` | List secure variables |
-| `Get-NMMCostEstimator` | Get cost estimation data |
-
-### Billing
-| Cmdlet | Description |
-|--------|-------------|
-| `Get-NMMInvoice` | List invoices |
-
-### Hidden API (Internal Web Portal)
-| Cmdlet | Description |
-|--------|-------------|
-| `Connect-NMMHiddenApi` | Start listener & open browser for cookie auth |
-| `Set-NMMHiddenApiCookie` | Manually set cookies (fallback method) |
-| `Invoke-HiddenApiRequest` | Call internal NMM web portal APIs |
+| Category | Examples |
+|----------|----------|
+| **Accounts** | `Connect-NMMApi`, `Get-NMMAccount` |
+| **Host Pools** | `Get-NMMHostPool`, `Get-NMMHostPoolSettings`, `New-NMMHostPool` |
+| **Session Hosts** | `Get-NMMHost`, `Get-NMMHostSchedule` |
+| **Desktop Images** | `Get-NMMDesktopImage`, `Get-NMMImageTemplate` |
+| **Users & Groups** | `Get-NMMUser`, `Get-NMMUsers`, `Get-NMMGroup` |
+| **Devices (Beta)** | `Get-NMMDevice`, `Get-NMMDeviceCompliance`, `Sync-NMMDevice` |
+| **Backup** | `Get-NMMBackup`, `Get-NMMProtectedItem`, `Get-NMMRecoveryPoint` |
+| **Automation** | `Get-NMMScriptedAction`, `Get-NMMSchedule`, `Get-NMMAutoscaleProfile` |
 
 ---
 
-## Common Patterns
+## Hidden API (Experimental)
 
-### Pipeline Support
-Most cmdlets support pipeline input:
+> **Warning:** The Hidden API accesses internal NMM web portal endpoints that are **not part of the official API**. These endpoints may change without notice and could break at any time. Use at your own risk.
+
+Access internal NMM APIs not exposed via the public REST API using browser cookie authentication.
+
 ```powershell
-# Get all host pools across all accounts
-Get-NMMAccount | Get-NMMHostPool
-
-# Get settings for all pools in an account
-Get-NMMHostPool -AccountId 123 | ForEach-Object {
-    Get-NMMHostPoolSettings -AccountId 123 `
-        -SubscriptionId $_.subscription `
-        -ResourceGroup $_.resourceGroup `
-        -PoolName $_.hostPoolName
-}
-```
-
-### Scope Parameter
-Some cmdlets support both Account and Global scope:
-```powershell
-# Account-level scripted actions
-Get-NMMScriptedAction -AccountId 123 -Scope Account
-
-# Global (MSP-level) scripted actions
-Get-NMMScriptedAction -Scope Global
-```
-
-### Beta API
-Device management cmdlets use the beta API:
-```powershell
-Get-NMMDevice -AccountId 123
-Get-NMMDeviceCompliance -AccountId 123 -DeviceId "device-guid"
-```
-
-### Hidden API (Internal Web Portal)
-Access internal NMM APIs not exposed via the public REST API.
-
-#### Quick Start with Browser Extension (Recommended)
-
-1. **Install the extension**: Load the `BrowserExtension` folder as an unpacked extension in Chrome/Edge
-   - Go to `chrome://extensions` or `edge://extensions`
-   - Enable "Developer mode"
-   - Click "Load unpacked" and select the `BrowserExtension` folder
-
-2. **Authenticate**:
-```powershell
-# This opens browser, waits for you to log in and click the extension
+# Start listener and open browser for authentication
 Connect-NMMHiddenApi
 
-# Make API requests
+# After logging in and clicking the browser extension:
 Invoke-HiddenApiRequest -Method GET -Endpoint "accounts"
-Invoke-HiddenApiRequest -Method POST -Endpoint "some/endpoint" -Body @{ key = "value" }
 ```
 
-#### Manual Method (Fallback)
-If you prefer not to use the extension, use Cookie-Editor:
-
-```powershell
-# 1. Install "Cookie-Editor" browser extension
-# 2. Log into NMM web portal
-# 3. Click Cookie-Editor > Export > "Header String"
-# 4. Paste the cookie string:
-Set-NMMHiddenApiCookie -CookieString ".AspNetCore.Cookies=abc123;XSRF-TOKEN=xyz789"
-
-# Or call a full URL directly
-Invoke-HiddenApiRequest -Method GET -Uri "https://nmmdemo.nerdio.net/api/v1/msp/intune/global/policies/baselines"
-```
-
-> **Note:** Cookies expire when your browser session ends. Re-authenticate after logging back in.
-
----
-
-## Bulk Partner Center Enrollment
-
-For bulk enrollment of customers from Partner Center, see [Bulk Enroll PartnerCenter.md](Bulk%20Enroll%20PartnerCenter.md).
+See the [Hidden API Guide](https://Get-Nerdio.github.io/NMM-PS/getting-started/hidden-api/) for setup instructions including the browser extension.
 
 ---
 
 ## Disclaimer
 
-This repository is a collaborative space maintained by Nerdio Sales Engineers on a best-effort basis.
+> **This module is NOT officially supported by Nerdio.**
 
-- **Not officially supported** by Nerdio
-- **No formal support** - use the Issues section for community help
-- **Use at your own risk** - test thoroughly before deployment
-- **No commitment** to specific features or timelines
+This repository is a collaborative space maintained by Nerdio Sales Engineers on a **best-effort basis**.
+
+- **Unofficial** - Not an official Nerdio product
+- **No warranty** - Provided "as-is" without any guarantees
+- **No SLA** - No commitment to response times or fixes
+- **Use at your own risk** - Test thoroughly before production use
+- **May break** - API changes may cause issues without warning
+- **Community support only** - Use GitHub Issues for questions
+
+By using this module, you acknowledge that:
+1. You understand this is unofficial software
+2. You will not contact Nerdio Support for issues with this module
+3. You accept all risks associated with using unofficial tools
+
+---
 
 ## Contributing
 
@@ -302,6 +173,8 @@ This repository is a collaborative space maintained by Nerdio Sales Engineers on
 2. Make your changes
 3. Submit a pull request with a detailed description
 
+---
+
 ## License
 
-(c) Nerdio. All rights reserved.
+MIT License - See [LICENSE](LICENSE) file for details.

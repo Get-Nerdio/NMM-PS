@@ -2,6 +2,9 @@
 
 Welcome to the **NMM-PS** documentation - a PowerShell module for automating Nerdio Manager for MSP (NMM) operations.
 
+!!! warning "Unofficial Module"
+    This is an **unofficial**, community-maintained module created by Nerdio Sales Engineers. It is **not officially supported** by Nerdio. Use at your own risk. Do not contact Nerdio Support for issues with this module.
+
 <div class="grid cards" markdown>
 
 -   :material-download:{ .lg .middle } __Quick Install__
@@ -98,6 +101,16 @@ NMM-PS covers the following NMM API areas:
 - **Documentation**: You're here!
 - **GitHub Issues**: [Report bugs or request features](https://github.com/Get-Nerdio/NMM-PS/issues)
 - **PowerShell Help**: `Get-Help Connect-NMMApi -Full`
+
+## Disclaimer
+
+!!! note "Community Project"
+    This module is maintained by Nerdio Sales Engineers on a **best-effort basis**.
+
+    - **Unofficial** - Not an official Nerdio product
+    - **No warranty** - Provided "as-is" without any guarantees
+    - **No SLA** - No commitment to response times or fixes
+    - **Community support only** - Use [GitHub Issues](https://github.com/Get-Nerdio/NMM-PS/issues) for questions
 
 ## License
 

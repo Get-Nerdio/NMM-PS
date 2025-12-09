@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'docs/**'
+      - 'Docs/**'
       - 'mkdocs.yml'
       - 'requirements.txt'
       - '.github/workflows/docs.yml'

@@ -4,7 +4,8 @@ site_author: Nerdio
 site_url: https://Get-Nerdio.github.io/NMM-PS/
 repo_url: https://github.com/Get-Nerdio/NMM-PS
 repo_name: NMM-PS
-edit_uri: edit/main/docs/
+edit_uri: edit/main/Docs/
+docs_dir: Docs
 
 copyright: Copyright &copy; 2024 Nerdio
 

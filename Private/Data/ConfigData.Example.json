@@ -1,14 +1,55 @@
 {
-    "BaseUri": "your-nerdio-base-uri",
-    "TenantId": "your-nerdio-hosted-tenant-id",
-    "ClientId": "your-nerdio-client-id", 
-    "Scope": "your-nerdio-scope",
-    "ClientSecret": "your-nerdio-client-secret",
+    "BaseUri": "https://your-nerdio-instance.nerdio.net",
+    "TenantId": "your-azure-tenant-id",
+    "ClientId": "your-app-registration-client-id",
+    "Scope": "api://your-app-id/.default",
+
+    "_comment_auth": "AuthMethod: 'Secret' (default) or 'Certificate'",
+    "AuthMethod": "Secret",
+
+    "_comment_secret": "Client secret authentication (default method)",
+    "ClientSecret": "your-client-secret",
+
+    "_comment_certificate": "Certificate authentication - choose ONE Source type below",
+    "Certificate": {
+        "_comment": "Source options: CertStore, Keychain, PfxFile, KeyVault",
+
+        "_example_certstore": {
+            "Source": "CertStore",
+            "Thumbprint": "ABC123DEF456789...",
+            "StoreLocation": "CurrentUser",
+            "StoreName": "My"
+        },
+
+        "_example_keychain": {
+            "Source": "Keychain",
+            "Thumbprint": "ABC123DEF456789...",
+            "KeychainPath": "login.keychain-db"
+        },
+
+        "_example_pfxfile": {
+            "Source": "PfxFile",
+            "Path": "/path/to/certificate.pfx",
+            "Password": "pfx-password-here",
+            "PasswordKeyVault": "vault-name/secret-name"
+        },
+
+        "_example_keyvault": {
+            "Source": "KeyVault",
+            "VaultName": "your-keyvault-name",
+            "CertificateName": "nmm-api-certificate"
+        }
+    },
+
+    "_comment_hiddenapi": "Hidden API settings for browser extension auth",
+    "HiddenApiBaseUri": "https://your-nerdio-instance.nerdio.net/api/v1/msp",
+
+    "_comment_sam": "Secure Application Model for Partner Center integration",
     "SAM": {
         "SAMDisplayName": "your-sam-display-name",
-        "ApplicationId": "your-application-id",
-        "ApplicationSecret": "your-application-secret",
+        "ApplicationId": "your-sam-application-id",
+        "ApplicationSecret": "your-sam-application-secret",
         "MSPTenantId": "your-msp-tenant-id",
-        "RefreshToken": "your-refresh-token"
+        "RefreshToken": "your-sam-refresh-token"
     }
 }

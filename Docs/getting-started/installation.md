@@ -42,6 +42,25 @@ To update to the latest version:
 Update-Module -Name NMM-PS
 ```
 
+Check your current version and available updates:
+
+```powershell
+# Check installed version
+Get-InstalledModule -Name NMM-PS | Select-Object Name, Version
+
+# Check latest available version on PowerShell Gallery
+Find-Module -Name NMM-PS | Select-Object Name, Version
+
+# Force update even if already at latest
+Update-Module -Name NMM-PS -Force
+```
+
+!!! tip "After Updating"
+    If you have the module imported in your current session, re-import it to use the new version:
+    ```powershell
+    Import-Module NMM-PS -Force
+    ```
+
 ## Verify Installation
 
 Check that the module is installed correctly:

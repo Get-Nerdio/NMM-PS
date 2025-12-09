@@ -1,96 +1,190 @@
 function Invoke-HiddenApiRequest {
-    [CmdletBinding(DefaultParameterSetName = 'None')]
+    <#
+    .SYNOPSIS
+        Call internal NMM web portal APIs.
+    .DESCRIPTION
+        Makes authenticated requests to the NMM web portal internal APIs.
+        Authentication methods:
+        1. Connect-NMMHiddenApi - Opens browser, waits for extension to send cookies (recommended)
+        2. Set-NMMHiddenApiCookie - Manually set cookies from Cookie-Editor export
+
+        Requires HiddenApiBaseUri to be configured in Private/Data/ConfigData.json.
+    .PARAMETER Method
+        HTTP method (GET, POST, PUT, DELETE, PATCH).
+    .PARAMETER Endpoint
+        API endpoint path (e.g., "accounts", "host-pool").
+    .PARAMETER Body
+        Request body for POST/PUT/PATCH requests.
+    .PARAMETER BaseUri
+        Base URI for the API. If not provided, reads from ConfigData.json.
+    .EXAMPLE
+        Invoke-HiddenApiRequest -Method GET -Endpoint "accounts"
+    .EXAMPLE
+        Invoke-HiddenApiRequest -Method POST -Endpoint "some/endpoint" -Body @{ key = "value" }
+    .EXAMPLE
+        Invoke-HiddenApiRequest -Method GET -Uri "https://nmmdemo.nerdio.net/api/v1/msp/intune/global/policies/baselines"
+
+        Calls a full URL directly.
+    .EXAMPLE
+        # Cookie-based auth workflow
+        Set-NMMHiddenApiCookie -CookieString "AppServiceAuthSession=abc123"
+        Invoke-HiddenApiRequest -Method GET -Endpoint "accounts"
+    #>
+    [CmdletBinding(DefaultParameterSetName = 'Endpoint')]
     param(
         [Parameter(Mandatory = $true)]
+        [ValidateSet('GET', 'POST', 'PUT', 'DELETE', 'PATCH')]
         [string]$Method,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Endpoint')]
         [string]$Endpoint,
 
+        [Parameter(Mandatory = $true, ParameterSetName = 'Uri')]
+        [string]$Uri,
+
         [Parameter()]
-        $Body,
+        [hashtable]$Body,
 
-        [Parameter(ParameterSetName = 'Simple')]
-        [string]$Query, # Name of the query parameter
+        [Parameter(ParameterSetName = 'Endpoint')]
+        [hashtable]$QueryParameters,
 
-        [Parameter(ParameterSetName = 'Simple')]
-        [string]$Filter, # Value for the query parameter
-
-        [Parameter(ParameterSetName = 'Hashtable')]
-        [Hashtable]$QueryParameters  # Hashtable for multiple query parameters
+        [Parameter(ParameterSetName = 'Endpoint')]
+        [string]$BaseUri
     )
 
-    try {
-        $token = $script:cachedToken
+    process {
+        # Determine authentication method
+        $authMethod = $null
 
-        if (!$token.AccessToken -or $token.Expiry -le (Get-Date)) {
-            Write-Warning "Token is missing or expired, retrieving a new one."
-            $token = Connect-NMMApi
+        if ($Script:HiddenApiAuthMethod -eq 'Cookie' -and $Script:HiddenApiCookies) {
+            $authMethod = 'Cookie'
+            Write-Verbose "Using cookie-based authentication"
         }
-
-        $requestHeaders = @{
-            'Accept'        = 'application/json'
-            'Authorization' = "Bearer $($token.AccessToken)"
-        }
-
-        # Update the base URI to use the correct API endpoint
-        # Remove the double forward slash and ensure we're using the API endpoint
-        $baseUri = 'https://web-admin-portal-qzcg6537olky6.azurewebsites.net/api/v1/'
-        $uri = "$baseUri/$($Endpoint.TrimStart('/'))"
-
-        # Add verbose logging for troubleshooting
-        Write-Verbose "Requesting URI: $uri"
-        Write-Verbose "HTTP Method: $Method"
-
-        # Determine how to append query parameters based on method used
-        if ($PSCmdlet.ParameterSetName -eq 'Simple' -and $Query -and $Filter) {
-            $uri = "$($uri)?$($Query)=$($Filter)"
-        }
-        elseif ($PSCmdlet.ParameterSetName -eq 'Hashtable' -and $QueryParameters) {
-            $queryString = ($QueryParameters.GetEnumerator() | ForEach-Object { "$($_.Key)=$($_.Value)" }) -join "&"
-            $uri = "$($uri)?$($queryString)"
-        }
-
-        # Execute the API request
-        if ($Body) {
-            $BodyJSON = $Body | ConvertTo-Json -Depth 10 -ErrorAction Stop
-            Write-Verbose "Request body JSON:"
-            Write-Verbose $BodyJSON
-            $response = Invoke-WebRequest -Uri $uri -Body $BodyJSON -Method $Method -Headers $requestHeaders -ContentType 'application/json'
+        elseif ($Script:HiddenApiToken -and $Script:HiddenApiToken.AccessToken) {
+            # Check if token is expired
+            if ($Script:HiddenApiToken.ExpiresOn -le (Get-Date)) {
+                Write-Warning "Token has expired. Run Connect-NMMHiddenApi to re-authenticate."
+                return
+            }
+            $authMethod = 'Bearer'
+            Write-Verbose "Using bearer token authentication"
         }
         else {
-            $response = Invoke-WebRequest -Uri $uri -Method $Method -Headers $requestHeaders
+            Write-Error "Not authenticated. Run Connect-NMMHiddenApi or Set-NMMHiddenApiCookie first."
+            return
         }
-        
-        return $response
 
-    }
-    catch {
-        # Enhance error handling
-        Write-Error "API request failed: $_"
-        Write-Verbose "Error details: $($_.Exception.Message)"
-        if ($_.Exception.Response) {
-            $statusCode = $_.Exception.Response.StatusCode
-            Write-Verbose "Response status code: $statusCode"
-            
-            # Try to read response content safely
-            try {
-                $rawContent = $_.Exception.Response.GetResponseStream()
-                $reader = [System.IO.StreamReader]::new($rawContent)
-                $errorContent = $reader.ReadToEnd()
-                Write-Verbose "Response content: $errorContent"
+        try {
+            # Build URI based on parameter set
+            if ($PSCmdlet.ParameterSetName -eq 'Uri') {
+                # Use the full URI directly
+                $requestUri = $Uri
+                Write-Verbose "Using direct URI: $requestUri"
             }
-            catch {
-                Write-Verbose "Could not read error response content: $_"
+            else {
+                # Build URI from BaseUri + Endpoint
+                if ([string]::IsNullOrEmpty($BaseUri)) {
+                    try {
+                        $config = Get-ConfigData -ErrorAction Stop
+                        if ($config.HiddenApiBaseUri) {
+                            $BaseUri = $config.HiddenApiBaseUri
+                            Write-Verbose "Using HiddenApiBaseUri from ConfigData.json: $BaseUri"
+                        }
+                        else {
+                            Write-Error "HiddenApiBaseUri not configured in ConfigData.json. Please add it to Private/Data/ConfigData.json"
+                            return
+                        }
+                    }
+                    catch {
+                        Write-Error "Could not read ConfigData.json. Please configure HiddenApiBaseUri in Private/Data/ConfigData.json"
+                        return
+                    }
+                }
+
+                $requestUri = "$BaseUri/$($Endpoint.TrimStart('/'))"
+
+                # Add query parameters if provided
+                if ($QueryParameters -and $QueryParameters.Count -gt 0) {
+                    $queryString = ($QueryParameters.GetEnumerator() | ForEach-Object {
+                        "$($_.Key)=$([System.Web.HttpUtility]::UrlEncode($_.Value))"
+                    }) -join "&"
+                    $requestUri = "$requestUri?$queryString"
+                }
             }
-            finally {
-                if ($reader) { $reader.Dispose() }
-                if ($rawContent) { $rawContent.Dispose() }
+
+            Write-Verbose "Request URI: $requestUri"
+            Write-Verbose "Method: $Method"
+
+            # Build headers based on auth method
+            $headers = @{
+                'Accept' = 'application/json'
             }
+
+            # Build request parameters
+            $requestParams = @{
+                Uri         = $requestUri
+                Method      = $Method
+                Headers     = $headers
+                ContentType = 'application/json'
+            }
+
+            # Add authentication based on method
+            if ($authMethod -eq 'Bearer') {
+                $headers['Authorization'] = "Bearer $($Script:HiddenApiToken.AccessToken)"
+                Write-Verbose "Added Bearer token to Authorization header"
+            }
+            elseif ($authMethod -eq 'Cookie') {
+                # Build cookie string
+                $cookieString = ($Script:HiddenApiCookies.GetEnumerator() | ForEach-Object {
+                    "$($_.Key)=$($_.Value)"
+                }) -join "; "
+                $headers['Cookie'] = $cookieString
+                Write-Verbose "Added cookies to request: $($Script:HiddenApiCookies.Keys -join ', ')"
+
+                # Add XSRF token as header if present (required by ASP.NET Core)
+                $xsrfToken = $Script:HiddenApiCookies['XSRF-TOKEN']
+                if ($xsrfToken) {
+                    $headers['X-XSRF-TOKEN'] = $xsrfToken
+                    $headers['RequestVerificationToken'] = $xsrfToken
+                    Write-Verbose "Added XSRF token to headers"
+                }
+
+                # Use WebSession for better cookie handling
+                $session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+                foreach ($cookie in $Script:HiddenApiCookies.GetEnumerator()) {
+                    $cookieObj = New-Object System.Net.Cookie
+                    $cookieObj.Name = $cookie.Key
+                    $cookieObj.Value = $cookie.Value
+                    $cookieObj.Domain = ([System.Uri]$requestUri).Host
+                    $session.Cookies.Add($cookieObj)
+                }
+                $requestParams['WebSession'] = $session
+            }
+
+            # Add body for POST/PUT/PATCH
+            if ($Body -and $Method -in @('POST', 'PUT', 'PATCH')) {
+                $jsonBody = $Body | ConvertTo-Json -Depth 10
+                $requestParams.Body = $jsonBody
+                Write-Verbose "Request body: $jsonBody"
+            }
+
+            # Execute request
+            $response = Invoke-RestMethod @requestParams -ErrorAction Stop
+
+            return $response
         }
-        throw  # Re-throw the error after logging
-    }
-    finally {
-        Write-Verbose "Completed API request"
+        catch {
+            $statusCode = $_.Exception.Response.StatusCode.value__
+
+            Write-Error "API request failed: $($_.Exception.Message)"
+            Write-Verbose "Status code: $statusCode"
+
+            # Try to get error details
+            if ($_.ErrorDetails.Message) {
+                Write-Verbose "Error details: $($_.ErrorDetails.Message)"
+            }
+
+            throw
+        }
     }
 }

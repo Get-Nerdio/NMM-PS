@@ -7,7 +7,7 @@ repo_name: NMM-PS
 edit_uri: edit/main/Docs/
 docs_dir: Docs
 
-copyright: Copyright &copy; 2024 Nerdio
+copyright: Copyright &copy; 2024-2025 Nerdio
 
 theme:
   name: material

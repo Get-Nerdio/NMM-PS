@@ -35,9 +35,6 @@
     # Minimum version of the PowerShell engine required by this module
     PowerShellVersion      = '7.0'
 
-    # External Help File
-    ExternalModuleHelpFile = '.\Docs\en-US\NMM-PS-help.xml'
-
     # Name of the PowerShell host required by this module
     # PowerShellHostName = ''
 

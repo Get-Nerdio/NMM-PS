@@ -4,7 +4,14 @@
 
 PowerShell module for the Nerdio Manager for MSP (NMM) REST API.
 
+[![Documentation](https://img.shields.io/badge/docs-Get--Nerdio.github.io%2FNMM--PS-blue)](https://Get-Nerdio.github.io/NMM-PS/)
+[![PowerShell](https://img.shields.io/badge/PowerShell-7.0%2B-blue)](https://github.com/PowerShell/PowerShell)
+
 > **Note:** This module is not yet available on the PowerShell Gallery. Use at your own risk.
+
+## Documentation
+
+Full documentation is available at **[https://Get-Nerdio.github.io/NMM-PS/](https://Get-Nerdio.github.io/NMM-PS/)**
 
 ## Installation
 
@@ -68,6 +75,32 @@ Get-NMMCommand -AsObject | Where-Object { $_.Category -eq 'Device' }
 
 ---
 
+## Authentication Methods
+
+### Client Secret (Default)
+Configure `Secret` in ConfigData.json and run:
+```powershell
+Connect-NMMApi
+```
+
+### Certificate-Based (Recommended for Production)
+More secure than client secrets. Create and configure a certificate:
+
+```powershell
+# Create certificate, import to cert store, upload to Azure AD, update config
+New-NMMApiCertificate -ExportToCertStore -Upload -UpdateConfig
+
+# Connect using certificate thumbprint
+Connect-NMMApi -CertificateThumbprint "YOUR_THUMBPRINT"
+
+# Or connect using PFX file
+Connect-NMMApi -CertificatePath "./cert.pfx" -CertificatePassword $securePassword
+```
+
+See the [Authentication Guide](https://Get-Nerdio.github.io/NMM-PS/getting-started/authentication/) for detailed setup instructions.
+
+---
+
 ## Available Cmdlets
 
 ### Account Management
@@ -76,6 +109,7 @@ Get-NMMCommand -AsObject | Where-Object { $_.Category -eq 'Device' }
 | `Connect-NMMApi` | Authenticate to the NMM API |
 | `Get-NMMAccount` | List all NMM accounts (tenants) |
 | `Get-NMMApiToken` | Get current API token information |
+| `New-NMMApiCertificate` | Create certificate for authentication |
 
 ### Host Pool Management
 | Cmdlet | Description |
@@ -151,6 +185,7 @@ Get-NMMCommand -AsObject | Where-Object { $_.Category -eq 'Device' }
 | `Get-NMMDeviceHardware` | Get hardware inventory |
 | `Get-NMMDeviceLAPS` | Get local admin password (**Sensitive**) |
 | `Get-NMMDeviceBitLocker` | Get BitLocker keys (**Sensitive**) |
+| `Sync-NMMDevice` | Force Intune sync |
 
 ### Infrastructure & Config
 | Cmdlet | Description |

@@ -1,0 +1,177 @@
+site_name: NMM-PS Documentation
+site_description: PowerShell module for Nerdio Manager for MSP (NMM) API automation
+site_author: Nerdio
+site_url: https://Get-Nerdio.github.io/NMM-PS/
+repo_url: https://github.com/Get-Nerdio/NMM-PS
+repo_name: NMM-PS
+edit_uri: edit/main/docs/
+
+copyright: Copyright &copy; 2024 Nerdio
+
+theme:
+  name: material
+  logo: assets/logo_light_theme.png
+  favicon: assets/logo_dark_theme.png
+
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+  font:
+    text: Poppins
+    code: Roboto Mono
+
+  features:
+    # Navigation
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.indexes
+
+    # Content
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+
+    # Search
+    - search.suggest
+    - search.highlight
+    - search.share
+
+    # Table of contents
+    - toc.follow
+
+  icon:
+    repo: fontawesome/brands/github
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - tables
+  - toc:
+      permalink: true
+      title: On this page
+
+plugins:
+  - search:
+      lang: en
+      separator: '[\s\-,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|&#?\w+;'
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: timeago
+
+extra_css:
+  - stylesheets/nerdio.css
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/Get-Nerdio/NMM-PS
+      name: NMM-PS on GitHub
+    - icon: fontawesome/solid/globe
+      link: https://getnerdio.com
+      name: Nerdio Website
+
+  generator: false
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - getting-started/index.md
+    - Installation: getting-started/installation.md
+    - Configuration: getting-started/configuration.md
+    - Authentication: getting-started/authentication.md
+  - Cmdlets:
+    - cmdlets/index.md
+    - Authentication:
+      - cmdlets/authentication/index.md
+      - Connect-NMMApi: cmdlets/authentication/Connect-NMMApi.md
+      - Get-NMMApiToken: cmdlets/authentication/Get-NMMApiToken.md
+      - New-NMMApiCertificate: cmdlets/authentication/New-NMMApiCertificate.md
+    - Accounts:
+      - cmdlets/accounts/index.md
+      - Get-NMMAccount: cmdlets/accounts/Get-NMMAccount.md
+    - Host Pools:
+      - cmdlets/hostpools/index.md
+      - Get-NMMHostPool: cmdlets/hostpools/Get-NMMHostPool.md
+      - Get-NMMHostPoolSettings: cmdlets/hostpools/Get-NMMHostPoolSettings.md
+      - Get-NMMHostPoolAutoscale: cmdlets/hostpools/Get-NMMHostPoolAutoscale.md
+      - Get-NMMHostPoolAD: cmdlets/hostpools/Get-NMMHostPoolAD.md
+      - Get-NMMHostPoolRDP: cmdlets/hostpools/Get-NMMHostPoolRDP.md
+      - Get-NMMHostPoolFSLogix: cmdlets/hostpools/Get-NMMHostPoolFSLogix.md
+      - Get-NMMHostPoolSchedule: cmdlets/hostpools/Get-NMMHostPoolSchedule.md
+      - Get-NMMHostPoolUser: cmdlets/hostpools/Get-NMMHostPoolUser.md
+      - Get-NMMHostPoolSession: cmdlets/hostpools/Get-NMMHostPoolSession.md
+    - Session Hosts:
+      - cmdlets/hosts/index.md
+      - Get-NMMHost: cmdlets/hosts/Get-NMMHost.md
+      - Get-NMMHostSchedule: cmdlets/hosts/Get-NMMHostSchedule.md
+    - Desktop Images:
+      - cmdlets/images/index.md
+      - Get-NMMDesktopImage: cmdlets/images/Get-NMMDesktopImage.md
+      - Get-NMMDesktopImageDetail: cmdlets/images/Get-NMMDesktopImageDetail.md
+      - Get-NMMImageTemplate: cmdlets/images/Get-NMMImageTemplate.md
+    - Users & Groups:
+      - cmdlets/users/index.md
+      - Get-NMMUser: cmdlets/users/Get-NMMUser.md
+      - Get-NMMUsers: cmdlets/users/Get-NMMUsers.md
+      - Get-NMMGroup: cmdlets/users/Get-NMMGroup.md
+    - Devices (Beta):
+      - cmdlets/devices/index.md
+      - Get-NMMDevice: cmdlets/devices/Get-NMMDevice.md
+      - Get-NMMDeviceCompliance: cmdlets/devices/Get-NMMDeviceCompliance.md
+      - Sync-NMMDevice: cmdlets/devices/Sync-NMMDevice.md
+    - Backup:
+      - cmdlets/backup/index.md
+      - Get-NMMBackup: cmdlets/backup/Get-NMMBackup.md
+      - Get-NMMProtectedItem: cmdlets/backup/Get-NMMProtectedItem.md
+      - Get-NMMRecoveryPoint: cmdlets/backup/Get-NMMRecoveryPoint.md
+    - Automation:
+      - cmdlets/automation/index.md
+      - Get-NMMScriptedAction: cmdlets/automation/Get-NMMScriptedAction.md
+      - Get-NMMSchedule: cmdlets/automation/Get-NMMSchedule.md
+      - Get-NMMAutoscaleProfile: cmdlets/automation/Get-NMMAutoscaleProfile.md
+  - Examples:
+    - examples/index.md
+  - Changelog: changelog.md

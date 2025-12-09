@@ -10,4 +10,11 @@ Todo.md
 Invoke-HiddenApiRequest.ps1
 .gitignore
 ConfigData.json
-Claude.md
+.swagger/
+
+# MkDocs build output
+site/
+
+# Certificate files (sensitive)
+*.pfx
+*.pem

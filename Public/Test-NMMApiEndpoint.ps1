@@ -139,25 +139,101 @@ function Test-NMMApiEndpoint {
                 $funcParams['AccountId'] = $AccountId
             }
 
-            # Handle endpoints that need additional context (e.g., Get-NMMHost needs pool info)
-            if ($endpointConfig.requiresContext -eq 'HostPool') {
-                # Get first host pool for context
-                $pools = (Get-NMMHostPool -AccountId $AccountId).HostPool
-                if ($pools -and $pools.Count -gt 0) {
-                    $pool = $pools[0]
-                    $funcParams['SubscriptionId'] = $pool.subscription
-                    $funcParams['ResourceGroup'] = $pool.resourceGroup
-                    $funcParams['PoolName'] = $pool.hostPoolName
+            # Handle endpoints that need additional context
+            switch ($endpointConfig.requiresContext) {
+                'HostPool' {
+                    # Get first host pool for context
+                    $pools = (Get-NMMHostPool -AccountId $AccountId).HostPool
+                    if ($pools -and $pools.Count -gt 0) {
+                        $pool = $pools[0]
+                        $funcParams['SubscriptionId'] = $pool.subscription
+                        $funcParams['ResourceGroup'] = $pool.resourceGroup
+                        $funcParams['PoolName'] = $pool.hostPoolName
+                    }
+                    else {
+                        throw "No host pools available for context"
+                    }
                 }
-                else {
-                    throw "No host pools available for context"
+                'Device' {
+                    # Get first device for context
+                    $devices = Get-NMMDevice -AccountId $AccountId
+                    if ($devices -and @($devices).Count -gt 0) {
+                        $funcParams['DeviceId'] = $devices[0].id
+                    }
+                    else {
+                        throw "No devices available for context"
+                    }
+                }
+                'User' {
+                    # Get first user for context
+                    $users = Get-NMMUsers -AccountId $AccountId
+                    if ($users -and @($users).Count -gt 0) {
+                        $funcParams['UserId'] = $users[0].entraId
+                    }
+                    else {
+                        throw "No users available for context"
+                    }
+                }
+                'DesktopImage' {
+                    # Get first desktop image for context
+                    $images = Get-NMMDesktopImage -AccountId $AccountId
+                    if ($images -and @($images).Count -gt 0) {
+                        $img = $images[0]
+                        $funcParams['SubscriptionId'] = $img.subscriptionId
+                        $funcParams['ResourceGroup'] = $img.resourceGroup
+                        $funcParams['ImageName'] = $img.name
+                    }
+                    else {
+                        throw "No desktop images available for context"
+                    }
+                }
+                'ProtectedItem' {
+                    # Get first protected item for context
+                    $items = Get-NMMProtectedItem -AccountId $AccountId
+                    if ($items -and @($items).Count -gt 0) {
+                        $funcParams['ProtectedItemId'] = $items[0].protectedItemId
+                    }
+                    else {
+                        throw "No protected items available for context"
+                    }
+                }
+                'Group' {
+                    # Groups require specific GroupId - skip for now
+                    throw "Group context requires specific GroupId - test manually"
+                }
+                'Schedule' {
+                    # Get first schedule for context
+                    $schedules = Get-NMMSchedule -Scope Global
+                    if ($schedules -and @($schedules).Count -gt 0) {
+                        $funcParams['ScheduleId'] = $schedules[0].id
+                        $funcParams['Scope'] = 'Global'
+                    }
+                    else {
+                        throw "No schedules available for context"
+                    }
+                }
+                'ScriptedAction' {
+                    # Get first scripted action for context
+                    $actions = Get-NMMScriptedAction -Scope Global
+                    if ($actions -and @($actions).Count -gt 0) {
+                        $funcParams['ScriptedActionId'] = $actions[0].id
+                        $funcParams['Scope'] = 'Global'
+                    }
+                    else {
+                        throw "No scripted actions available for context"
+                    }
                 }
             }
 
             # Add any extra function parameters from config
             if ($endpointConfig.functionParams) {
                 $endpointConfig.functionParams.PSObject.Properties | ForEach-Object {
-                    $funcParams[$_.Name] = $_.Value
+                    $value = $_.Value
+                    # Replace placeholder values with actual values
+                    if ($value -eq '{AccountId}') {
+                        $value = $AccountId
+                    }
+                    $funcParams[$_.Name] = $value
                 }
             }
 
@@ -166,7 +242,7 @@ function Test-NMMApiEndpoint {
             $testResult.FunctionOutput = $funcOutput
             $testResult.FunctionCount = @($funcOutput).Count
 
-            # Build raw API endpoint
+            # Build raw API endpoint - replace all placeholders with actual values
             $rawEndpoint = $endpointConfig.endpoint -replace '\{accountId\}', $AccountId
             if ($funcParams.ContainsKey('SubscriptionId')) {
                 $rawEndpoint = $rawEndpoint -replace '\{subscriptionId\}', $funcParams['SubscriptionId']
@@ -176,6 +252,24 @@ function Test-NMMApiEndpoint {
             }
             if ($funcParams.ContainsKey('PoolName')) {
                 $rawEndpoint = $rawEndpoint -replace '\{poolName\}', $funcParams['PoolName']
+            }
+            if ($funcParams.ContainsKey('DeviceId')) {
+                $rawEndpoint = $rawEndpoint -replace '\{deviceId\}', $funcParams['DeviceId']
+            }
+            if ($funcParams.ContainsKey('UserId')) {
+                $rawEndpoint = $rawEndpoint -replace '\{userId\}', $funcParams['UserId']
+            }
+            if ($funcParams.ContainsKey('ImageName')) {
+                $rawEndpoint = $rawEndpoint -replace '\{imageName\}', $funcParams['ImageName']
+            }
+            if ($funcParams.ContainsKey('ProtectedItemId')) {
+                $rawEndpoint = $rawEndpoint -replace '\{protectedItemId\}', $funcParams['ProtectedItemId']
+            }
+            if ($funcParams.ContainsKey('ScheduleId')) {
+                $rawEndpoint = $rawEndpoint -replace '\{scheduleId\}', $funcParams['ScheduleId']
+            }
+            if ($funcParams.ContainsKey('ScriptedActionId')) {
+                $rawEndpoint = $rawEndpoint -replace '\{scriptedActionId\}', $funcParams['ScriptedActionId']
             }
 
             # Call raw API

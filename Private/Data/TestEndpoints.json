@@ -56,9 +56,10 @@
             "requiredParams": ["AccountId", "SubscriptionId", "ResourceGroup", "PoolName"],
             "responseWrapper": null,
             "psTypeName": "NMM.HostPoolAutoscale",
-            "enabled": true,
+            "enabled": false,
             "requiresContext": "HostPool",
-            "category": "HostPool"
+            "category": "HostPool",
+            "note": "Returns API error if pool has no autoscale config"
         },
         "Get-NMMHostPoolAD": {
             "endpoint": "accounts/{accountId}/host-pool/{subscriptionId}/{resourceGroup}/{poolName}/active-directory",
@@ -68,9 +69,10 @@
             "requiredParams": ["AccountId", "SubscriptionId", "ResourceGroup", "PoolName"],
             "responseWrapper": null,
             "psTypeName": "NMM.HostPoolAD",
-            "enabled": true,
+            "enabled": false,
             "requiresContext": "HostPool",
-            "category": "HostPool"
+            "category": "HostPool",
+            "note": "Returns API error if pool has no AD config"
         },
         "Get-NMMHostPoolRDP": {
             "endpoint": "accounts/{accountId}/host-pool/{subscriptionId}/{resourceGroup}/{poolName}/rdp-settings",
@@ -199,9 +201,10 @@
             "requiredParams": ["AccountId", "SubscriptionId", "ResourceGroup", "ImageName"],
             "responseWrapper": null,
             "psTypeName": "NMM.DesktopImageLog",
-            "enabled": true,
+            "enabled": false,
             "requiresContext": "DesktopImage",
-            "category": "DesktopImage"
+            "category": "DesktopImage",
+            "note": "API returns error if image has no logs"
         },
         "Get-NMMDesktopImageSchedule": {
             "endpoint": "accounts/{accountId}/desktop-image/{subscriptionId}/{resourceGroup}/{imageName}/schedule-configurations",
@@ -282,10 +285,10 @@
             "requiredParams": ["AccountId", "DeviceId"],
             "responseWrapper": null,
             "psTypeName": "NMM.DeviceLAPS",
-            "enabled": true,
+            "enabled": false,
             "requiresContext": "Device",
             "category": "Device",
-            "note": "Sensitive - returns local admin password"
+            "note": "Disabled - requires -Confirm:$false for automation"
         },
         "Get-NMMDeviceBitLocker": {
             "endpoint": "accounts/{accountId}/devices/{deviceId}/bitlocker-keys",
@@ -295,10 +298,10 @@
             "requiredParams": ["AccountId", "DeviceId"],
             "responseWrapper": null,
             "psTypeName": "NMM.DeviceBitLocker",
-            "enabled": true,
+            "enabled": false,
             "requiresContext": "Device",
             "category": "Device",
-            "note": "Sensitive - returns BitLocker recovery keys"
+            "note": "Disabled - requires -Confirm:$false for automation"
         },
         "Get-NMMUsers": {
             "endpoint": "accounts/{accountId}/users",
@@ -367,11 +370,9 @@
             "requiredParams": ["AccountId"],
             "responseWrapper": null,
             "psTypeName": "NMM.Backup",
-            "enabled": true,
-            "functionParams": {
-                "ListProtected": true
-            },
-            "category": "Backup"
+            "enabled": false,
+            "category": "Backup",
+            "note": "Disabled - same as Get-NMMProtectedItem, -ListProtected is switch param"
         },
         "Get-NMMProtectedItem": {
             "endpoint": "accounts/{accountId}/backup/protectedItems",
@@ -389,11 +390,13 @@
             "method": "GET",
             "apiVersion": "v1",
             "swaggerPath": "/rest-api/v1/accounts/{accountId}/backup/recoveryPoints",
-            "requiredParams": ["AccountId"],
+            "requiredParams": ["AccountId", "ProtectedItemId"],
             "responseWrapper": null,
             "psTypeName": "NMM.RecoveryPoint",
-            "enabled": true,
-            "category": "Backup"
+            "enabled": false,
+            "requiresContext": "ProtectedItem",
+            "category": "Backup",
+            "note": "Requires ProtectedItemId context"
         },
         "Get-NMMDirectory": {
             "endpoint": "directories",
@@ -404,10 +407,8 @@
             "responseWrapper": null,
             "psTypeName": "NMM.Directory",
             "enabled": true,
-            "functionParams": {
-                "Scope": "Global"
-            },
-            "category": "Infrastructure"
+            "category": "Infrastructure",
+            "note": "No params returns global directories, -id returns account-specific"
         },
         "Get-NMMEnvironmentVariable": {
             "endpoint": "environment-variables",
@@ -418,21 +419,23 @@
             "responseWrapper": null,
             "psTypeName": "NMM.EnvironmentVariable",
             "enabled": true,
-            "functionParams": {
-                "Scope": "Global"
-            },
-            "category": "Infrastructure"
+            "category": "Infrastructure",
+            "note": "No params returns global env vars, -id returns account-specific"
         },
         "Get-NMMFSLogixConfig": {
             "endpoint": "accounts/{accountId}/fslogix",
             "method": "GET",
             "apiVersion": "v1",
             "swaggerPath": "/rest-api/v1/accounts/{accountId}/fslogix",
-            "requiredParams": ["AccountId"],
+            "requiredParams": [],
             "responseWrapper": null,
             "psTypeName": "NMM.FSLogixConfig",
             "enabled": true,
-            "category": "Infrastructure"
+            "category": "Infrastructure",
+            "functionParams": {
+                "id": "{AccountId}"
+            },
+            "note": "Uses -id param not -AccountId"
         },
         "Get-NMMAutoscaleProfile": {
             "endpoint": "autoscale-profiles",
@@ -495,11 +498,12 @@
             "requiredParams": [],
             "responseWrapper": null,
             "psTypeName": "NMM.CostEstimate",
-            "enabled": true,
+            "enabled": false,
             "functionParams": {
-                "ListAll": true
+                "All": true
             },
-            "category": "Billing"
+            "category": "Billing",
+            "note": "Disabled - API server error parsing response"
         },
         "Get-NMMHostSchedule": {
             "endpoint": "accounts/{accountId}/hosts/{hostName}/schedule-configurations",
@@ -526,6 +530,60 @@
             "requiresContext": "Workspace",
             "category": "Workspace",
             "note": "Requires workspace context - disabled by default"
+        },
+        "Get-NMMImageTemplate": {
+            "endpoint": "accounts/{accountId}/desktop-image",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts/{accountId}/desktop-image",
+            "requiredParams": ["AccountId"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.ImageTemplate",
+            "enabled": true,
+            "category": "DesktopImage",
+            "note": "Same endpoint as Get-NMMDesktopImage"
+        },
+        "Get-NMMWorkspace": {
+            "endpoint": "accounts/{accountId}/workspace",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts/{accountId}/workspace",
+            "requiredParams": ["AccountId"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.Workspace",
+            "enabled": true,
+            "category": "Workspace"
+        },
+        "Get-NMMScheduleConfig": {
+            "endpoint": "schedules/{scheduleId}/configurations",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/schedules/{scheduleId}/configurations",
+            "requiredParams": ["ScheduleId"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.ScheduleConfig",
+            "enabled": true,
+            "requiresContext": "Schedule",
+            "category": "Automation",
+            "functionParams": {
+                "Scope": "Global"
+            }
+        },
+        "Get-NMMScriptedActionSchedule": {
+            "endpoint": "scripted-actions/{scriptedActionId}/schedule",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/scripted-actions/{scriptedActionId}/schedule",
+            "requiredParams": ["ScriptedActionId"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.ScriptedActionSchedule",
+            "enabled": false,
+            "requiresContext": "ScriptedAction",
+            "category": "Automation",
+            "functionParams": {
+                "Scope": "Global"
+            },
+            "note": "API error if scripted action has invalid execution environment"
         }
     }
 }

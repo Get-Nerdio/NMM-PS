@@ -126,6 +126,7 @@ Run `Get-NMMCommand` for a full list, or see the [cmdlet reference](https://Get-
 | **Devices (Beta)** | `Get-NMMDevice`, `Get-NMMDeviceCompliance`, `Sync-NMMDevice` |
 | **Backup** | `Get-NMMBackup`, `Get-NMMProtectedItem`, `Get-NMMRecoveryPoint` |
 | **Automation** | `Get-NMMScriptedAction`, `Get-NMMSchedule`, `Get-NMMAutoscaleProfile` |
+| **Reports** | `Invoke-NMMReport`, `New-NMMReport`, `ConvertTo-NMMHtmlReport` |
 
 ---
 

@@ -1,0 +1,168 @@
+{
+    "AccountOverview": {
+        "title": "Account Overview Report",
+        "subtitle": "Complete account summary including host pools, session hosts, images, and users",
+        "description": "A comprehensive view of your NMM account's AVD infrastructure and user base",
+        "sections": [
+            {
+                "title": "Host Pools",
+                "description": "Azure Virtual Desktop host pools with autoscale status",
+                "function": "Get-NMMHostPool",
+                "showChart": true,
+                "chartType": "donut",
+                "chartConfig": {
+                    "groupField": "isAutoScaleEnabled"
+                }
+            },
+            {
+                "title": "Session Hosts",
+                "description": "Virtual machines serving as session hosts",
+                "function": "Get-NMMHost",
+                "functionRequiresContext": "HostPool",
+                "showChart": true,
+                "chartType": "donut",
+                "chartConfig": {
+                    "groupField": "powerState"
+                }
+            },
+            {
+                "title": "Desktop Images",
+                "description": "Golden images used for VM deployment",
+                "function": "Get-NMMDesktopImage",
+                "showChart": false
+            },
+            {
+                "title": "Users",
+                "description": "Directory users with access to AVD resources",
+                "function": "Get-NMMUsers",
+                "showChart": false
+            }
+        ]
+    },
+    "DeviceInventory": {
+        "title": "Device Inventory Report",
+        "subtitle": "Intune-managed device fleet overview",
+        "description": "Complete inventory of Intune devices including compliance, hardware specs, and installed applications",
+        "sections": [
+            {
+                "title": "Devices",
+                "description": "All Intune-managed devices with compliance status",
+                "function": "Get-NMMDevice",
+                "showChart": true,
+                "chartType": "pie",
+                "chartConfig": {
+                    "groupField": "complianceState"
+                }
+            },
+            {
+                "title": "Compliance Details",
+                "description": "Detailed compliance policy status per device",
+                "function": "Get-NMMDeviceCompliance",
+                "functionRequiresContext": "Device",
+                "showChart": false
+            },
+            {
+                "title": "Hardware Information",
+                "description": "Device hardware specifications and system information",
+                "function": "Get-NMMDeviceHardware",
+                "functionRequiresContext": "Device",
+                "showChart": false
+            },
+            {
+                "title": "Installed Applications",
+                "description": "Applications installed on managed devices",
+                "function": "Get-NMMDeviceApp",
+                "functionRequiresContext": "Device",
+                "showChart": false
+            }
+        ]
+    },
+    "SecurityCompliance": {
+        "title": "Security & Compliance Report",
+        "subtitle": "Security posture and compliance overview",
+        "description": "Assessment of device compliance, backup coverage, and user security status",
+        "sections": [
+            {
+                "title": "Device Compliance",
+                "description": "Compliance status of all Intune-managed devices",
+                "function": "Get-NMMDevice",
+                "showChart": true,
+                "chartType": "pie",
+                "chartConfig": {
+                    "groupField": "complianceState"
+                }
+            },
+            {
+                "title": "Backup Protection",
+                "description": "Azure Backup protected items and protection status",
+                "function": "Get-NMMProtectedItem",
+                "showChart": true,
+                "chartType": "donut",
+                "chartConfig": {
+                    "groupField": "protectionState"
+                }
+            },
+            {
+                "title": "User Accounts",
+                "description": "Directory users for security review",
+                "function": "Get-NMMUsers",
+                "showChart": false
+            }
+        ]
+    },
+    "Infrastructure": {
+        "title": "Infrastructure Report",
+        "subtitle": "Complete AVD infrastructure configuration",
+        "description": "Detailed view of all infrastructure components including host pools, images, profiles, and settings",
+        "sections": [
+            {
+                "title": "Host Pools",
+                "description": "Azure Virtual Desktop host pools",
+                "function": "Get-NMMHostPool",
+                "showChart": true,
+                "chartType": "donut",
+                "chartConfig": {
+                    "groupField": "isAutoScaleEnabled"
+                }
+            },
+            {
+                "title": "Session Hosts",
+                "description": "Virtual machines in host pools",
+                "function": "Get-NMMHost",
+                "functionRequiresContext": "HostPool",
+                "showChart": true,
+                "chartType": "donut",
+                "chartConfig": {
+                    "groupField": "powerState"
+                }
+            },
+            {
+                "title": "Desktop Images",
+                "description": "Golden images for VM deployment",
+                "function": "Get-NMMDesktopImage",
+                "showChart": false
+            },
+            {
+                "title": "FSLogix Configurations",
+                "description": "Profile container and Office container settings",
+                "function": "Get-NMMFSLogixConfig",
+                "parameterName": "id",
+                "showChart": false
+            },
+            {
+                "title": "Directories",
+                "description": "Active Directory and Azure AD configurations",
+                "function": "Get-NMMDirectory",
+                "parameterName": "id",
+                "showChart": false
+            },
+            {
+                "title": "Environment Variables",
+                "description": "Scripted action environment variables",
+                "function": "Get-NMMEnvironmentVariable",
+                "parameterName": "id",
+                "showChart": false
+            }
+        ]
+    }
+}

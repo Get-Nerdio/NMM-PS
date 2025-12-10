@@ -213,10 +213,52 @@ New-NMMReport -Title "Report" |
     Export-NMMReport -OutputPath "./chained.html"
 ```
 
+## Pre-built Reports
+
+For common reporting scenarios, use `Invoke-NMMReport` to generate complete reports with a single command.
+
+### Quick Start
+
+```powershell
+# Interactive mode - choose from menu
+Invoke-NMMReport -AccountId 67
+
+# Direct generation
+Invoke-NMMReport -ReportType AccountOverview -AccountId 67 -OpenInBrowser
+```
+
+### Available Report Types
+
+| Report | Sections | Description |
+|--------|----------|-------------|
+| `AccountOverview` | 4 | Host pools, session hosts, images, users |
+| `DeviceInventory` | 4 | Devices, compliance, hardware, apps |
+| `SecurityCompliance` | 3 | Devices, backup protection, users |
+| `Infrastructure` | 6 | Pools, hosts, images, FSLogix, directories, env vars |
+
+### How It Works
+
+Pre-built reports automatically:
+
+- **Fetch all required data** from multiple API endpoints
+- **Resolve context** for nested resources (hosts from each pool, details for each device)
+- **Flatten nested arrays** for readable tables (e.g., compliance states become "2 Compliant, 1 Error")
+- **Apply templates** for consistent column formatting
+
+```powershell
+# Generate all 4 report types for an account
+@('AccountOverview', 'DeviceInventory', 'SecurityCompliance', 'Infrastructure') | ForEach-Object {
+    Invoke-NMMReport -ReportType $_ -AccountId 67 -OutputPath "./reports/$_.html"
+}
+```
+
+For more details, see [Invoke-NMMReport](../cmdlets/reports/Invoke-NMMReport.md).
+
 ## Related Cmdlets
 
 | Cmdlet | Description |
 |--------|-------------|
+| [Invoke-NMMReport](../cmdlets/reports/Invoke-NMMReport.md) | Generate pre-built reports |
 | [ConvertTo-NMMHtmlReport](../cmdlets/reports/ConvertTo-NMMHtmlReport.md) | Simple pipeline to HTML |
 | [New-NMMReport](../cmdlets/reports/New-NMMReport.md) | Initialize report builder |
 | [Add-NMMReportSection](../cmdlets/reports/Add-NMMReportSection.md) | Add section to report |

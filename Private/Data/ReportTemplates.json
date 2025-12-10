@@ -97,6 +97,18 @@
                 "title": "Backups by Protection State"
             }
         },
+        "NMM.DesktopImage": {
+            "displayName": "Desktop Image",
+            "tableColumns": ["name", "resourceGroup", "subscriptionId"],
+            "columnHeaders": {
+                "name": "Image Name",
+                "resourceGroup": "Resource Group",
+                "subscriptionId": "Subscription"
+            },
+            "defaultChart": {
+                "enabled": false
+            }
+        },
         "Default": {
             "displayName": "Data",
             "tableColumns": [],

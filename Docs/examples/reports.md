@@ -43,6 +43,106 @@ Get-NMMBackup -AccountId 123 -ListProtected |
 
 ---
 
+## Pre-built Reports
+
+The fastest way to generate comprehensive reports. `Invoke-NMMReport` automatically fetches all required data and generates complete reports with a single command.
+
+### Interactive Selection
+
+```powershell
+# Display menu and choose report type
+Invoke-NMMReport -AccountId 67
+```
+
+Output:
+```
+  NMM Pre-built Reports
+  ========================================
+
+  [1] AccountOverview
+      Complete account summary including host pools, session hosts, images, and users
+
+  [2] DeviceInventory
+      Intune-managed device fleet overview
+
+  [3] SecurityCompliance
+      Security posture and compliance overview
+
+  [4] Infrastructure
+      Complete AVD infrastructure configuration
+
+  [0] Cancel
+
+  Select report type (1-4):
+```
+
+### Direct Generation
+
+```powershell
+# Account Overview - pools, hosts, images, users
+Invoke-NMMReport -ReportType AccountOverview -AccountId 67 -OpenInBrowser
+
+# Device Inventory - devices, compliance, hardware, apps
+Invoke-NMMReport -ReportType DeviceInventory -AccountId 67 -Theme dark
+
+# Security Compliance - devices, backups, users
+Invoke-NMMReport -ReportType SecurityCompliance -AccountId 67 -OutputPath "./security.html"
+
+# Infrastructure - pools, hosts, images, FSLogix, directories, env vars
+Invoke-NMMReport -ReportType Infrastructure -AccountId 67 -OpenInBrowser
+```
+
+### Generate All Report Types
+
+```powershell
+# Create all 4 reports for an account
+$reportTypes = @('AccountOverview', 'DeviceInventory', 'SecurityCompliance', 'Infrastructure')
+$outputDir = "./reports/$(Get-Date -Format 'yyyy-MM-dd')"
+New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
+
+foreach ($type in $reportTypes) {
+    $result = Invoke-NMMReport -ReportType $type -AccountId 67 -OutputPath "$outputDir/$type.html"
+    Write-Host "$type : $($result.SectionCount) sections" -ForegroundColor Green
+}
+```
+
+### Scheduled Pre-built Reports
+
+```powershell
+# daily-reports.ps1 - For Task Scheduler or cron
+param([int]$AccountId = 67)
+
+Import-Module NMM-PS -Force
+Connect-NMMApi | Out-Null
+
+$date = Get-Date -Format "yyyy-MM-dd"
+$reports = @(
+    @{ Type = 'AccountOverview'; Path = "C:\Reports\AccountOverview_$date.html" }
+    @{ Type = 'SecurityCompliance'; Path = "C:\Reports\Security_$date.html" }
+)
+
+foreach ($r in $reports) {
+    Invoke-NMMReport -ReportType $r.Type -AccountId $AccountId -OutputPath $r.Path
+    Write-Host "Generated: $($r.Path)"
+}
+```
+
+### Multi-Account Pre-built Reports
+
+```powershell
+# Generate infrastructure reports for all accounts
+Connect-NMMApi | Out-Null
+$accounts = Get-NMMAccount
+
+foreach ($account in $accounts) {
+    $path = "./reports/$($account.name)-Infrastructure.html"
+    Invoke-NMMReport -ReportType Infrastructure -AccountId $account.id -OutputPath $path
+    Write-Host "$($account.name): $path" -ForegroundColor Cyan
+}
+```
+
+---
+
 ## Multi-Section Dashboards
 
 ### Complete Account Report

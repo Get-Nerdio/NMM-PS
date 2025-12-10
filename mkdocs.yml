@@ -177,6 +177,7 @@ nav:
       - Get-NMMAutoscaleProfile: cmdlets/automation/Get-NMMAutoscaleProfile.md
     - Reports:
       - cmdlets/reports/index.md
+      - Invoke-NMMReport: cmdlets/reports/Invoke-NMMReport.md
       - ConvertTo-NMMHtmlReport: cmdlets/reports/ConvertTo-NMMHtmlReport.md
       - New-NMMReport: cmdlets/reports/New-NMMReport.md
       - Add-NMMReportSection: cmdlets/reports/Add-NMMReportSection.md

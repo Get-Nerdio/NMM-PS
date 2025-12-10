@@ -12,13 +12,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **HTML Report System** - Comprehensive reporting framework with professional Nerdio branding
-  - `New-NMMReport` - Generate HTML reports from any NMM data
-  - `New-NMMReportSection` - Create report sections with tables, cards, and lists
-  - `Get-NMMReportTemplate` - List available report templates
-  - `Export-NMMReportData` - Export report data to JSON/CSV
-  - `Invoke-NMMCompleteReport` - Generate complete environment reports
-  - Built-in templates: HostPool, Device, Account, Custom
-  - Executive summary with key metrics
+  - `New-NMMReport` - Initialize multi-section report builder
+  - `Add-NMMReportSection` - Add data sections with optional charts
+  - `Export-NMMReport` - Generate final HTML output
+  - `ConvertTo-NMMHtmlReport` - Simple pipeline to HTML conversion
+  - `Add-NMMTypeName` - Tag custom data with PSTypeName for template matching
+  - `Invoke-NMMReport` - Pre-built reports with interactive menu (AccountOverview, DeviceInventory, SecurityCompliance, Infrastructure)
+  - Built-in templates: HostPool, Host, Device, Account, User, Backup, DesktopImage
+  - ApexCharts integration (bar, pie, donut, line, area)
+  - DataTables.js for searchable, sortable tables
   - Responsive design with dark/light theme support
 
 - **API Endpoint Testing Framework** - Automated testing against Swagger specs

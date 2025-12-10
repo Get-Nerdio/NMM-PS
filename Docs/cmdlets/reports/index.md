@@ -16,6 +16,7 @@ The report cmdlets enable you to create professional, self-contained HTML report
 
 | Cmdlet | Description |
 |--------|-------------|
+| [Invoke-NMMReport](Invoke-NMMReport.md) | Generate pre-built reports with one command |
 | [ConvertTo-NMMHtmlReport](ConvertTo-NMMHtmlReport.md) | Simple pipeline to HTML report |
 | [New-NMMReport](New-NMMReport.md) | Initialize multi-section report builder |
 | [Add-NMMReportSection](Add-NMMReportSection.md) | Add section to report builder |
@@ -23,6 +24,18 @@ The report cmdlets enable you to create professional, self-contained HTML report
 | [Add-NMMTypeName](Add-NMMTypeName.md) | Tag data with PSTypeName for templates |
 
 ## Quick Examples
+
+### Pre-built Reports (Easiest)
+
+```powershell
+# Interactive menu
+Invoke-NMMReport -AccountId 67
+
+# Direct generation
+Invoke-NMMReport -ReportType AccountOverview -AccountId 67 -OpenInBrowser
+```
+
+Available types: `AccountOverview`, `DeviceInventory`, `SecurityCompliance`, `Infrastructure`
 
 ### Simple Pipeline Report
 
@@ -50,6 +63,7 @@ $report | Export-NMMReport -OutputPath "./dashboard.html" -OpenInBrowser
 | `NMM.Account` | Account | None |
 | `NMM.User` | User | None |
 | `NMM.Backup` | Backup Item | Donut (by protection state) |
+| `NMM.DesktopImage` | Desktop Image | None |
 
 ## Related
 

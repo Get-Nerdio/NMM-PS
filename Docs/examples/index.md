@@ -2,6 +2,14 @@
 
 Real-world examples and automation scenarios for NMM-PS.
 
+## Report Generation
+
+Generate interactive HTML reports with charts and searchable tables.
+
+- **[Report Generation Examples](reports.md)** - Single-section reports, multi-section dashboards, and advanced patterns
+
+---
+
 ## Common Workflows
 
 ### Get All Host Pools Across All Accounts

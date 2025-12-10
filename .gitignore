@@ -18,3 +18,16 @@ site/
 # Certificate files (sensitive)
 *.pfx
 *.pem
+
+#MCP
+.mcp.json
+
+# Claude Code local settings
+.claude/
+
+# Generated reports
+NMM-*.html
+*-Report.html
+
+# Scratch/development files
+Snippets.ps1

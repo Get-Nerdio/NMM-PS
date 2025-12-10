@@ -1,0 +1,82 @@
+{
+    "version": "1.0",
+    "description": "Configuration for Test-NMMApiEndpoint - maps NMM-PS functions to API endpoints",
+    "endpoints": {
+        "Get-NMMAccount": {
+            "endpoint": "accounts",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts",
+            "requiredParams": [],
+            "responseWrapper": null,
+            "psTypeName": "NMM.Account",
+            "enabled": true
+        },
+        "Get-NMMHostPool": {
+            "endpoint": "accounts/{accountId}/host-pool",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts/{accountId}/host-pool",
+            "requiredParams": ["AccountId"],
+            "responseWrapper": "HostPool",
+            "psTypeName": "NMM.HostPool",
+            "enabled": true
+        },
+        "Get-NMMHost": {
+            "endpoint": "accounts/{accountId}/host-pool/{subscriptionId}/{resourceGroup}/{poolName}/hosts",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts/{accountId}/host-pool/{subscriptionId}/{resourceGroup}/{poolName}/hosts",
+            "requiredParams": ["AccountId", "SubscriptionId", "ResourceGroup", "PoolName"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.Host",
+            "enabled": true,
+            "requiresContext": "HostPool",
+            "note": "Requires host pool context - test will use first available pool"
+        },
+        "Get-NMMDevice": {
+            "endpoint": "accounts/{accountId}/devices",
+            "method": "GET",
+            "apiVersion": "v1-beta",
+            "swaggerPath": "/rest-api/v1-beta/accounts/{accountId}/devices",
+            "requiredParams": ["AccountId"],
+            "responseWrapper": "devices",
+            "psTypeName": "NMM.Device",
+            "enabled": true
+        },
+        "Get-NMMUsers": {
+            "endpoint": "accounts/{accountId}/users",
+            "method": "POST",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts/{accountId}/users",
+            "requiredParams": ["AccountId"],
+            "requestBody": {
+                "pageSize": 100,
+                "pageNum": 0,
+                "searchTerm": "",
+                "activityTypes": [],
+                "identityTypes": [],
+                "assignments": [],
+                "entraIdRoleOptions": [],
+                "mfaRegisteredStates": [],
+                "riskStates": []
+            },
+            "responseWrapper": "users",
+            "psTypeName": "NMM.User",
+            "enabled": true
+        },
+        "Get-NMMBackup": {
+            "endpoint": "accounts/{accountId}/backup/protectedItems",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts/{accountId}/backup/protectedItems",
+            "requiredParams": ["AccountId"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.Backup",
+            "enabled": true,
+            "functionParams": {
+                "ListProtected": true
+            }
+        }
+    }
+}

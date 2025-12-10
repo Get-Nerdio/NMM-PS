@@ -49,4 +49,8 @@ NMM-PS is a PowerShell module that provides cmdlets for automating Nerdio Manage
 
     Learn about authentication methods
 
+-   [:material-file-chart: **HTML Reports**](reports.md)
+
+    Generate interactive dashboards
+
 </div>

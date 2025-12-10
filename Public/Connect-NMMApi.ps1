@@ -332,6 +332,14 @@ function Get-CertificateFromConfig {
             if ($CertConfig.Thumbprint) { $params.Thumbprint = $CertConfig.Thumbprint }
             if ($CertConfig.Subject) { $params.Subject = $CertConfig.Subject }
 
+            # Add fallback PFX path for macOS keychain issues where private key isn't properly associated
+            if ($CertConfig.FallbackPfxPath) {
+                $params.FallbackPfxPath = $CertConfig.FallbackPfxPath
+                if ($CertConfig.FallbackPfxPassword) {
+                    $params.FallbackPfxPassword = ConvertTo-SecureString -String $CertConfig.FallbackPfxPassword -AsPlainText -Force
+                }
+            }
+
             return Get-NMMCertificate @params
         }
         'PfxFile' {

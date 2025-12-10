@@ -92,7 +92,10 @@ function Get-NMMHostPool {
                         Write-Error "Host pool '$PoolName' not found"
                         return
                     }
-                    
+
+                    # Add PSTypeName for report template matching
+                    $hostPool.PSObject.TypeNames.Insert(0, 'NMM.HostPool')
+
                     $hostPoolObj = [PSCustomObject]@{
                         HostPool = $hostPool
                         Details  = @{}
@@ -144,6 +147,9 @@ function Get-NMMHostPool {
                     $hostPools = Invoke-APIRequest -Method 'GET' -Endpoint "accounts/$AccountId/host-pool"
 
                     foreach ($hostPool in $hostPools) {
+                        # Add PSTypeName for report template matching
+                        $hostPool.PSObject.TypeNames.Insert(0, 'NMM.HostPool')
+
                         $hostPoolObj = [PSCustomObject]@{
                             HostPool = $hostPool
                             Details  = @{}

@@ -52,6 +52,11 @@ function Get-NMMAccount {
             # Return all accounts if no filters are specified
             $results = $allAccounts
         }
+
+        # Add PSTypeName for report template matching
+        foreach ($account in @($results)) {
+            $account.PSObject.TypeNames.Insert(0, 'NMM.Account')
+        }
         return $results
     }
     Catch {

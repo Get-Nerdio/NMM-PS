@@ -1,0 +1,110 @@
+{
+    "version": "1.0",
+    "templates": {
+        "NMM.HostPool": {
+            "displayName": "Host Pool",
+            "tableColumns": ["hostPoolName", "resourceGroup", "subscription", "isAutoScaleEnabled"],
+            "columnHeaders": {
+                "hostPoolName": "Host Pool Name",
+                "resourceGroup": "Resource Group",
+                "subscription": "Subscription",
+                "isAutoScaleEnabled": "Auto-Scale"
+            },
+            "defaultChart": {
+                "enabled": true,
+                "type": "donut",
+                "groupField": "isAutoScaleEnabled",
+                "title": "Host Pools by Auto-Scale Status"
+            },
+            "summaryFields": ["isAutoScaleEnabled"],
+            "groupByOptions": ["resourceGroup", "subscription", "isAutoScaleEnabled"]
+        },
+        "NMM.Host": {
+            "displayName": "Session Host",
+            "tableColumns": ["hostName", "powerState", "assignedUser", "hostPoolName", "resourceGroup"],
+            "columnHeaders": {
+                "hostName": "Host Name",
+                "powerState": "Power State",
+                "assignedUser": "Assigned User",
+                "hostPoolName": "Host Pool",
+                "resourceGroup": "Resource Group"
+            },
+            "defaultChart": {
+                "enabled": true,
+                "type": "donut",
+                "groupField": "powerState",
+                "title": "Hosts by Power State"
+            }
+        },
+        "NMM.Account": {
+            "displayName": "Account",
+            "tableColumns": ["id", "name", "tenantId"],
+            "columnHeaders": {
+                "id": "ID",
+                "name": "Account Name",
+                "tenantId": "Tenant ID"
+            },
+            "defaultChart": {
+                "enabled": false
+            }
+        },
+        "NMM.Device": {
+            "displayName": "Intune Device",
+            "tableColumns": ["deviceName", "complianceState", "operatingSystem", "osVersion", "model", "lastSyncDateTime"],
+            "columnHeaders": {
+                "deviceName": "Device Name",
+                "complianceState": "Compliance",
+                "operatingSystem": "OS",
+                "osVersion": "OS Version",
+                "model": "Model",
+                "lastSyncDateTime": "Last Sync"
+            },
+            "defaultChart": {
+                "enabled": true,
+                "type": "pie",
+                "groupField": "complianceState",
+                "title": "Devices by Compliance State"
+            }
+        },
+        "NMM.User": {
+            "displayName": "User",
+            "tableColumns": ["displayName", "userPrincipalName", "mail", "accountEnabled"],
+            "columnHeaders": {
+                "displayName": "Display Name",
+                "userPrincipalName": "UPN",
+                "mail": "Email",
+                "accountEnabled": "Enabled"
+            },
+            "defaultChart": {
+                "enabled": false
+            }
+        },
+        "NMM.Backup": {
+            "displayName": "Backup Item",
+            "tableColumns": ["friendlyName", "protectedItemType", "protectionState", "lastBackupStatus", "lastRestorePoint", "policyName"],
+            "columnHeaders": {
+                "friendlyName": "Name",
+                "protectedItemType": "Type",
+                "protectionState": "Protection State",
+                "lastBackupStatus": "Last Status",
+                "lastRestorePoint": "Last Restore Point",
+                "policyName": "Policy"
+            },
+            "defaultChart": {
+                "enabled": true,
+                "type": "donut",
+                "groupField": "protectionState",
+                "title": "Backups by Protection State"
+            }
+        },
+        "Default": {
+            "displayName": "Data",
+            "tableColumns": [],
+            "columnHeaders": {},
+            "autoDetectColumns": true,
+            "defaultChart": {
+                "enabled": false
+            }
+        }
+    }
+}

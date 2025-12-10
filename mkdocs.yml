@@ -11,7 +11,7 @@ copyright: Copyright &copy; 2024-2025 Nerdio
 
 theme:
   name: material
-  logo: assets/logo_light_theme.png
+  logo: assets/logo_dark_theme.png
   favicon: assets/logo_dark_theme.png
 
   palette:
@@ -123,6 +123,7 @@ nav:
     - Installation: getting-started/installation.md
     - Configuration: getting-started/configuration.md
     - Authentication: getting-started/authentication.md
+    - HTML Reports: getting-started/reports.md
     - Hidden API (Experimental): getting-started/hidden-api.md
   - Cmdlets:
     - cmdlets/index.md
@@ -174,6 +175,14 @@ nav:
       - Get-NMMScriptedAction: cmdlets/automation/Get-NMMScriptedAction.md
       - Get-NMMSchedule: cmdlets/automation/Get-NMMSchedule.md
       - Get-NMMAutoscaleProfile: cmdlets/automation/Get-NMMAutoscaleProfile.md
+    - Reports:
+      - cmdlets/reports/index.md
+      - ConvertTo-NMMHtmlReport: cmdlets/reports/ConvertTo-NMMHtmlReport.md
+      - New-NMMReport: cmdlets/reports/New-NMMReport.md
+      - Add-NMMReportSection: cmdlets/reports/Add-NMMReportSection.md
+      - Export-NMMReport: cmdlets/reports/Export-NMMReport.md
+      - Add-NMMTypeName: cmdlets/reports/Add-NMMTypeName.md
   - Examples:
     - examples/index.md
+    - Report Generation: examples/reports.md
   - Changelog: changelog.md

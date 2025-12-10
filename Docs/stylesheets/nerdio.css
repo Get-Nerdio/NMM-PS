@@ -365,6 +365,37 @@ h1, h2, h3, h4, h5, h6,
 }
 
 /* --------------------------------------------------------------------------
+   Content Layout - Wider content area with balanced whitespace
+   -------------------------------------------------------------------------- */
+@media screen and (min-width: 76.25em) {
+  /* Expand the main grid container - balanced width */
+  .md-grid {
+    max-width: 70rem;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  /* Make the right sidebar (TOC) narrower */
+  .md-sidebar--secondary {
+    width: 11rem;
+  }
+
+  /* Content area */
+  .md-content {
+    max-width: none;
+  }
+}
+
+/* For extra-wide screens - scale up slightly */
+@media screen and (min-width: 100em) {
+  .md-grid {
+    max-width: 82rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
    Responsive Adjustments
    -------------------------------------------------------------------------- */
 @media screen and (max-width: 76.1875em) {

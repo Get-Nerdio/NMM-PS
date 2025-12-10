@@ -115,12 +115,20 @@ function Get-NMMBackup {
             } -ThrottleLimit 10  # Control the number of concurrent threads
             
             $arrayResults = $resultsBag.ToArray()
+            # Add PSTypeName for report template matching
+            foreach ($item in @($arrayResults)) {
+                $item.PSObject.TypeNames.Insert(0, 'NMM.Backup')
+            }
             return $arrayResults
-            
+
         }
         elseif ($ProtectedItemId) {
             $result = Invoke-APIRequest -Method 'Get' -Endpoint "/accounts/$AccountId/backup/recoveryPoints" -Query 'protectedItemId' -Filter "$($ProtectedItemId)"
             Write-Verbose "Recovery Points for Item $($ProtectedItemId) : "
+            # Add PSTypeName for report template matching
+            foreach ($item in @($result)) {
+                $item.PSObject.TypeNames.Insert(0, 'NMM.Backup')
+            }
             return $result
         }
         else {

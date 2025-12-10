@@ -27,11 +27,25 @@ function Get-NMMDevice {
     )
 
     process {
-        if ($DeviceId) {
+        $response = if ($DeviceId) {
             Invoke-APIRequest -Method 'GET' -Endpoint "accounts/$AccountId/devices/$DeviceId" -ApiVersion 'v1-beta'
         }
         else {
             Invoke-APIRequest -Method 'GET' -Endpoint "accounts/$AccountId/devices" -ApiVersion 'v1-beta'
         }
+
+        # API returns { devices: [...], totalCount: X } for list, extract the devices array
+        $result = if ($response.devices) {
+            $response.devices
+        }
+        else {
+            $response
+        }
+
+        # Add PSTypeName for report template matching
+        foreach ($device in @($result)) {
+            $device.PSObject.TypeNames.Insert(0, 'NMM.Device')
+        }
+        $result
     }
 }

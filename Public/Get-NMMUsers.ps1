@@ -47,6 +47,20 @@ function Get-NMMUsers {
             riskStates         = @()  # Required but can be empty
         }
 
-        Invoke-APIRequest -Method 'POST' -Endpoint "accounts/$AccountId/users" -Body $body
+        $response = Invoke-APIRequest -Method 'POST' -Endpoint "accounts/$AccountId/users" -Body $body
+
+        # API returns { users: [...], totalUsers, ... stats ... }, extract the users array
+        $result = if ($response.users) {
+            $response.users
+        }
+        else {
+            $response
+        }
+
+        # Add PSTypeName for report template matching
+        foreach ($user in @($result)) {
+            $user.PSObject.TypeNames.Insert(0, 'NMM.User')
+        }
+        $result
     }
 }

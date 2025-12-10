@@ -42,8 +42,8 @@ function Get-NMMHost {
         $result = Invoke-APIRequest -Method 'GET' -Endpoint "accounts/$AccountId/host-pool/$SubscriptionId/$ResourceGroup/$PoolName/hosts"
 
         # Add PSTypeName for report template matching
-        foreach ($host in @($result)) {
-            $host.PSObject.TypeNames.Insert(0, 'NMM.Host')
+        foreach ($sessionHost in @($result)) {
+            $sessionHost.PSObject.TypeNames.Insert(0, 'NMM.Host')
         }
         $result
     }

@@ -10,7 +10,8 @@
             "requiredParams": [],
             "responseWrapper": null,
             "psTypeName": "NMM.Account",
-            "enabled": true
+            "enabled": true,
+            "category": "Core"
         },
         "Get-NMMHostPool": {
             "endpoint": "accounts/{accountId}/host-pool",
@@ -20,7 +21,8 @@
             "requiredParams": ["AccountId"],
             "responseWrapper": "HostPool",
             "psTypeName": "NMM.HostPool",
-            "enabled": true
+            "enabled": true,
+            "category": "HostPool"
         },
         "Get-NMMHost": {
             "endpoint": "accounts/{accountId}/host-pool/{subscriptionId}/{resourceGroup}/{poolName}/hosts",
@@ -32,7 +34,186 @@
             "psTypeName": "NMM.Host",
             "enabled": true,
             "requiresContext": "HostPool",
-            "note": "Requires host pool context - test will use first available pool"
+            "category": "HostPool"
+        },
+        "Get-NMMHostPoolSettings": {
+            "endpoint": "accounts/{accountId}/host-pool/{subscriptionId}/{resourceGroup}/{poolName}/avd",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts/{accountId}/host-pool/{subscriptionId}/{resourceGroup}/{poolName}/avd",
+            "requiredParams": ["AccountId", "SubscriptionId", "ResourceGroup", "PoolName"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.HostPoolSettings",
+            "enabled": true,
+            "requiresContext": "HostPool",
+            "category": "HostPool"
+        },
+        "Get-NMMHostPoolAutoscale": {
+            "endpoint": "accounts/{accountId}/host-pool/{subscriptionId}/{resourceGroup}/{poolName}/autoscale-settings",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts/{accountId}/host-pool/{subscriptionId}/{resourceGroup}/{poolName}/autoscale-settings",
+            "requiredParams": ["AccountId", "SubscriptionId", "ResourceGroup", "PoolName"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.HostPoolAutoscale",
+            "enabled": true,
+            "requiresContext": "HostPool",
+            "category": "HostPool"
+        },
+        "Get-NMMHostPoolAD": {
+            "endpoint": "accounts/{accountId}/host-pool/{subscriptionId}/{resourceGroup}/{poolName}/active-directory",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts/{accountId}/host-pool/{subscriptionId}/{resourceGroup}/{poolName}/active-directory",
+            "requiredParams": ["AccountId", "SubscriptionId", "ResourceGroup", "PoolName"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.HostPoolAD",
+            "enabled": true,
+            "requiresContext": "HostPool",
+            "category": "HostPool"
+        },
+        "Get-NMMHostPoolRDP": {
+            "endpoint": "accounts/{accountId}/host-pool/{subscriptionId}/{resourceGroup}/{poolName}/rdp-settings",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts/{accountId}/host-pool/{subscriptionId}/{resourceGroup}/{poolName}/rdp-settings",
+            "requiredParams": ["AccountId", "SubscriptionId", "ResourceGroup", "PoolName"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.HostPoolRDP",
+            "enabled": true,
+            "requiresContext": "HostPool",
+            "category": "HostPool"
+        },
+        "Get-NMMHostPoolFSLogix": {
+            "endpoint": "accounts/{accountId}/host-pool/{subscriptionId}/{resourceGroup}/{poolName}/fslogix",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts/{accountId}/host-pool/{subscriptionId}/{resourceGroup}/{poolName}/fslogix",
+            "requiredParams": ["AccountId", "SubscriptionId", "ResourceGroup", "PoolName"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.HostPoolFSLogix",
+            "enabled": true,
+            "requiresContext": "HostPool",
+            "category": "HostPool"
+        },
+        "Get-NMMHostPoolVMDeployment": {
+            "endpoint": "accounts/{accountId}/host-pool/{subscriptionId}/{resourceGroup}/{poolName}/vm-deployment",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts/{accountId}/host-pool/{subscriptionId}/{resourceGroup}/{poolName}/vm-deployment",
+            "requiredParams": ["AccountId", "SubscriptionId", "ResourceGroup", "PoolName"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.HostPoolVMDeployment",
+            "enabled": true,
+            "requiresContext": "HostPool",
+            "category": "HostPool"
+        },
+        "Get-NMMHostPoolTimeout": {
+            "endpoint": "accounts/{accountId}/host-pool/{subscriptionId}/{resourceGroup}/{poolName}/session-timeouts",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts/{accountId}/host-pool/{subscriptionId}/{resourceGroup}/{poolName}/session-timeouts",
+            "requiredParams": ["AccountId", "SubscriptionId", "ResourceGroup", "PoolName"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.HostPoolTimeout",
+            "enabled": true,
+            "requiresContext": "HostPool",
+            "category": "HostPool"
+        },
+        "Get-NMMHostPoolTag": {
+            "endpoint": "accounts/{accountId}/host-pool/{subscriptionId}/{resourceGroup}/{poolName}/tags",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts/{accountId}/host-pool/{subscriptionId}/{resourceGroup}/{poolName}/tags",
+            "requiredParams": ["AccountId", "SubscriptionId", "ResourceGroup", "PoolName"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.HostPoolTag",
+            "enabled": true,
+            "requiresContext": "HostPool",
+            "category": "HostPool"
+        },
+        "Get-NMMHostPoolSchedule": {
+            "endpoint": "accounts/{accountId}/host-pool/{subscriptionId}/{resourceGroup}/{poolName}/schedule-configurations",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts/{accountId}/host-pool/{subscriptionId}/{resourceGroup}/{poolName}/schedule-configurations",
+            "requiredParams": ["AccountId", "SubscriptionId", "ResourceGroup", "PoolName"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.HostPoolSchedule",
+            "enabled": true,
+            "requiresContext": "HostPool",
+            "category": "HostPool"
+        },
+        "Get-NMMHostPoolUser": {
+            "endpoint": "accounts/{accountId}/host-pool/{subscriptionId}/{resourceGroup}/{poolName}/assigned-users",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts/{accountId}/host-pool/{subscriptionId}/{resourceGroup}/{poolName}/assigned-users",
+            "requiredParams": ["AccountId", "SubscriptionId", "ResourceGroup", "PoolName"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.HostPoolUser",
+            "enabled": true,
+            "requiresContext": "HostPool",
+            "category": "HostPool"
+        },
+        "Get-NMMHostPoolSession": {
+            "endpoint": "accounts/{accountId}/host-pool/{subscriptionId}/{resourceGroup}/{poolName}/sessions",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts/{accountId}/host-pool/{subscriptionId}/{resourceGroup}/{poolName}/sessions",
+            "requiredParams": ["AccountId", "SubscriptionId", "ResourceGroup", "PoolName"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.HostPoolSession",
+            "enabled": true,
+            "requiresContext": "HostPool",
+            "category": "HostPool"
+        },
+        "Get-NMMDesktopImage": {
+            "endpoint": "accounts/{accountId}/desktop-image",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts/{accountId}/desktop-image",
+            "requiredParams": ["AccountId"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.DesktopImage",
+            "enabled": true,
+            "category": "DesktopImage"
+        },
+        "Get-NMMDesktopImageDetail": {
+            "endpoint": "accounts/{accountId}/desktop-image/{subscriptionId}/{resourceGroup}/{imageName}",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts/{accountId}/desktop-image/{subscriptionId}/{resourceGroup}/{imageName}",
+            "requiredParams": ["AccountId", "SubscriptionId", "ResourceGroup", "ImageName"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.DesktopImageDetail",
+            "enabled": true,
+            "requiresContext": "DesktopImage",
+            "category": "DesktopImage"
+        },
+        "Get-NMMDesktopImageLog": {
+            "endpoint": "accounts/{accountId}/desktop-image/{subscriptionId}/{resourceGroup}/{imageName}/change-log",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts/{accountId}/desktop-image/{subscriptionId}/{resourceGroup}/{imageName}/change-log",
+            "requiredParams": ["AccountId", "SubscriptionId", "ResourceGroup", "ImageName"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.DesktopImageLog",
+            "enabled": true,
+            "requiresContext": "DesktopImage",
+            "category": "DesktopImage"
+        },
+        "Get-NMMDesktopImageSchedule": {
+            "endpoint": "accounts/{accountId}/desktop-image/{subscriptionId}/{resourceGroup}/{imageName}/schedule-configurations",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts/{accountId}/desktop-image/{subscriptionId}/{resourceGroup}/{imageName}/schedule-configurations",
+            "requiredParams": ["AccountId", "SubscriptionId", "ResourceGroup", "ImageName"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.DesktopImageSchedule",
+            "enabled": true,
+            "requiresContext": "DesktopImage",
+            "category": "DesktopImage"
         },
         "Get-NMMDevice": {
             "endpoint": "accounts/{accountId}/devices",
@@ -42,7 +223,82 @@
             "requiredParams": ["AccountId"],
             "responseWrapper": "devices",
             "psTypeName": "NMM.Device",
-            "enabled": true
+            "enabled": true,
+            "category": "Device"
+        },
+        "Get-NMMDeviceCompliance": {
+            "endpoint": "accounts/{accountId}/devices/{deviceId}/compliance",
+            "method": "GET",
+            "apiVersion": "v1-beta",
+            "swaggerPath": "/rest-api/v1-beta/accounts/{accountId}/devices/{deviceId}/compliance",
+            "requiredParams": ["AccountId", "DeviceId"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.DeviceCompliance",
+            "enabled": true,
+            "requiresContext": "Device",
+            "category": "Device"
+        },
+        "Get-NMMDeviceApp": {
+            "endpoint": "accounts/{accountId}/devices/{deviceId}/apps",
+            "method": "GET",
+            "apiVersion": "v1-beta",
+            "swaggerPath": "/rest-api/v1-beta/accounts/{accountId}/devices/{deviceId}/apps",
+            "requiredParams": ["AccountId", "DeviceId"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.DeviceApp",
+            "enabled": true,
+            "requiresContext": "Device",
+            "category": "Device"
+        },
+        "Get-NMMDeviceAppFailure": {
+            "endpoint": "accounts/{accountId}/devices/{deviceId}/apps/failures",
+            "method": "GET",
+            "apiVersion": "v1-beta",
+            "swaggerPath": "/rest-api/v1-beta/accounts/{accountId}/devices/{deviceId}/apps/failures",
+            "requiredParams": ["AccountId", "DeviceId"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.DeviceAppFailure",
+            "enabled": true,
+            "requiresContext": "Device",
+            "category": "Device"
+        },
+        "Get-NMMDeviceHardware": {
+            "endpoint": "accounts/{accountId}/devices/{deviceId}/hardware",
+            "method": "GET",
+            "apiVersion": "v1-beta",
+            "swaggerPath": "/rest-api/v1-beta/accounts/{accountId}/devices/{deviceId}/hardware",
+            "requiredParams": ["AccountId", "DeviceId"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.DeviceHardware",
+            "enabled": true,
+            "requiresContext": "Device",
+            "category": "Device"
+        },
+        "Get-NMMDeviceLAPS": {
+            "endpoint": "accounts/{accountId}/devices/{deviceId}/local-admin-password",
+            "method": "GET",
+            "apiVersion": "v1-beta",
+            "swaggerPath": "/rest-api/v1-beta/accounts/{accountId}/devices/{deviceId}/local-admin-password",
+            "requiredParams": ["AccountId", "DeviceId"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.DeviceLAPS",
+            "enabled": true,
+            "requiresContext": "Device",
+            "category": "Device",
+            "note": "Sensitive - returns local admin password"
+        },
+        "Get-NMMDeviceBitLocker": {
+            "endpoint": "accounts/{accountId}/devices/{deviceId}/bitlocker-keys",
+            "method": "GET",
+            "apiVersion": "v1-beta",
+            "swaggerPath": "/rest-api/v1-beta/accounts/{accountId}/devices/{deviceId}/bitlocker-keys",
+            "requiredParams": ["AccountId", "DeviceId"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.DeviceBitLocker",
+            "enabled": true,
+            "requiresContext": "Device",
+            "category": "Device",
+            "note": "Sensitive - returns BitLocker recovery keys"
         },
         "Get-NMMUsers": {
             "endpoint": "accounts/{accountId}/users",
@@ -63,7 +319,45 @@
             },
             "responseWrapper": "users",
             "psTypeName": "NMM.User",
-            "enabled": true
+            "enabled": true,
+            "category": "User"
+        },
+        "Get-NMMUser": {
+            "endpoint": "accounts/{accountId}/users/{userId}",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts/{accountId}/users/{userId}",
+            "requiredParams": ["AccountId", "UserId"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.UserDetail",
+            "enabled": true,
+            "requiresContext": "User",
+            "category": "User"
+        },
+        "Get-NMMUserMFA": {
+            "endpoint": "accounts/{accountId}/users/mfaStatus/{userId}",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts/{accountId}/users/mfaStatus/{userId}",
+            "requiredParams": ["AccountId", "UserId"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.UserMFA",
+            "enabled": true,
+            "requiresContext": "User",
+            "category": "User"
+        },
+        "Get-NMMGroup": {
+            "endpoint": "accounts/{accountId}/groups/{groupId}",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts/{accountId}/groups/{groupId}",
+            "requiredParams": ["AccountId", "GroupId"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.Group",
+            "enabled": false,
+            "requiresContext": "Group",
+            "category": "User",
+            "note": "Requires specific GroupId - disabled by default"
         },
         "Get-NMMBackup": {
             "endpoint": "accounts/{accountId}/backup/protectedItems",
@@ -76,7 +370,162 @@
             "enabled": true,
             "functionParams": {
                 "ListProtected": true
-            }
+            },
+            "category": "Backup"
+        },
+        "Get-NMMProtectedItem": {
+            "endpoint": "accounts/{accountId}/backup/protectedItems",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts/{accountId}/backup/protectedItems",
+            "requiredParams": ["AccountId"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.ProtectedItem",
+            "enabled": true,
+            "category": "Backup"
+        },
+        "Get-NMMRecoveryPoint": {
+            "endpoint": "accounts/{accountId}/backup/recoveryPoints",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts/{accountId}/backup/recoveryPoints",
+            "requiredParams": ["AccountId"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.RecoveryPoint",
+            "enabled": true,
+            "category": "Backup"
+        },
+        "Get-NMMDirectory": {
+            "endpoint": "directories",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/directories",
+            "requiredParams": [],
+            "responseWrapper": null,
+            "psTypeName": "NMM.Directory",
+            "enabled": true,
+            "functionParams": {
+                "Scope": "Global"
+            },
+            "category": "Infrastructure"
+        },
+        "Get-NMMEnvironmentVariable": {
+            "endpoint": "environment-variables",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/environment-variables",
+            "requiredParams": [],
+            "responseWrapper": null,
+            "psTypeName": "NMM.EnvironmentVariable",
+            "enabled": true,
+            "functionParams": {
+                "Scope": "Global"
+            },
+            "category": "Infrastructure"
+        },
+        "Get-NMMFSLogixConfig": {
+            "endpoint": "accounts/{accountId}/fslogix",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts/{accountId}/fslogix",
+            "requiredParams": ["AccountId"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.FSLogixConfig",
+            "enabled": true,
+            "category": "Infrastructure"
+        },
+        "Get-NMMAutoscaleProfile": {
+            "endpoint": "autoscale-profiles",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/autoscale-profiles",
+            "requiredParams": [],
+            "responseWrapper": null,
+            "psTypeName": "NMM.AutoscaleProfile",
+            "enabled": true,
+            "functionParams": {
+                "Scope": "Global"
+            },
+            "category": "Automation"
+        },
+        "Get-NMMSchedule": {
+            "endpoint": "schedules",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/schedules",
+            "requiredParams": [],
+            "responseWrapper": null,
+            "psTypeName": "NMM.Schedule",
+            "enabled": true,
+            "functionParams": {
+                "Scope": "Global"
+            },
+            "category": "Automation"
+        },
+        "Get-NMMScriptedAction": {
+            "endpoint": "scripted-actions",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/scripted-actions",
+            "requiredParams": [],
+            "responseWrapper": null,
+            "psTypeName": "NMM.ScriptedAction",
+            "enabled": true,
+            "functionParams": {
+                "Scope": "Global"
+            },
+            "category": "Automation"
+        },
+        "Get-NMMInvoice": {
+            "endpoint": "invoices",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/invoices",
+            "requiredParams": [],
+            "responseWrapper": null,
+            "psTypeName": "NMM.Invoice",
+            "enabled": true,
+            "category": "Billing"
+        },
+        "Get-NMMCostEstimator": {
+            "endpoint": "costestimator/list",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/costestimator/list",
+            "requiredParams": [],
+            "responseWrapper": null,
+            "psTypeName": "NMM.CostEstimate",
+            "enabled": true,
+            "functionParams": {
+                "ListAll": true
+            },
+            "category": "Billing"
+        },
+        "Get-NMMHostSchedule": {
+            "endpoint": "accounts/{accountId}/hosts/{hostName}/schedule-configurations",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts/{accountId}/hosts/{hostName}/schedule-configurations",
+            "requiredParams": ["AccountId", "HostName"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.HostSchedule",
+            "enabled": false,
+            "requiresContext": "Host",
+            "category": "HostPool",
+            "note": "Requires specific HostName - disabled by default"
+        },
+        "Get-NMMWorkspaceSession": {
+            "endpoint": "accounts/{accountId}/workspace/{subscriptionId}/{resourceGroup}/{workspaceName}/sessions",
+            "method": "GET",
+            "apiVersion": "v1",
+            "swaggerPath": "/rest-api/v1/accounts/{accountId}/workspace/{subscriptionId}/{resourceGroup}/{workspaceName}/sessions",
+            "requiredParams": ["AccountId", "SubscriptionId", "ResourceGroup", "WorkspaceName"],
+            "responseWrapper": null,
+            "psTypeName": "NMM.WorkspaceSession",
+            "enabled": false,
+            "requiresContext": "Workspace",
+            "category": "Workspace",
+            "note": "Requires workspace context - disabled by default"
         }
     }
 }

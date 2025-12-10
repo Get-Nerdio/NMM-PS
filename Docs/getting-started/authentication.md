@@ -97,10 +97,16 @@ After running `New-NMMApiCertificate -UpdateConfig`, your config will be updated
     ```json
     "Certificate": {
         "Source": "Keychain",
-        "Thumbprint": "ABC123DEF456...",
-        "KeychainPath": "login.keychain-db"
+        "Thumbprint": "ABC123DEF456..."
     }
     ```
+
+    !!! info "macOS Keychain Requirements"
+        Keychain authentication uses native Swift tools included with NMM-PS.
+        Requires **Xcode Command Line Tools**:
+        ```bash
+        xcode-select --install
+        ```
 
 === "PFX File"
 
@@ -193,14 +199,95 @@ Connect-NMMApi
 
 Ensure the certificate is installed in the correct store:
 
-```powershell
-# Windows - Check certificate store
-Get-ChildItem Cert:\CurrentUser\My | Where-Object Thumbprint -eq "ABC123..."
+=== "Windows"
 
-# macOS - Check keychain
-security find-certificate -a -c "NMM-API"
-```
+    ```powershell
+    Get-ChildItem Cert:\CurrentUser\My | Where-Object Thumbprint -eq "ABC123..."
+    ```
+
+=== "macOS"
+
+    NMM-PS uses Swift to access macOS Keychain. To verify your certificate:
+
+    ```bash
+    # Run the FindIdentity Swift tool
+    swift Private/Tools/FindIdentity.swift YOUR_THUMBPRINT
+    ```
+
+    If Swift is not available, install Xcode Command Line Tools:
+
+    ```bash
+    xcode-select --install
+    ```
+
+    !!! note "Why Swift?"
+        The standard `security find-identity` command cannot access the modern
+        data protection keychain. NMM-PS includes Swift helper tools that use
+        Apple's native Security framework APIs for reliable keychain access.
 
 ### Invalid Client Secret
 
 Verify your `ConfigData.json` has the correct secret and that it hasn't expired in Azure AD.
+
+## macOS Keychain Deep Dive
+
+macOS has two keychain implementations:
+
+| Keychain Type | Access Method | Used By |
+|---------------|---------------|---------|
+| File-based | `security` CLI | Legacy apps |
+| Data Protection | Swift Security.framework | Modern apps, NMM-PS |
+
+### How NMM-PS Accesses Keychain
+
+NMM-PS includes Swift helper tools in `Private/Tools/`:
+
+| Tool | Purpose |
+|------|---------|
+| `ImportP12ToKeychain.swift` | Import P12 files with proper identity association |
+| `ExportIdentity.swift` | Export identity by thumbprint to temp PFX |
+| `FindIdentity.swift` | List all identities in keychain |
+
+These tools use Apple's modern `SecItem*` APIs which properly handle the data protection keychain.
+
+### Import a Certificate to Keychain
+
+```bash
+# Using NMM-PS Swift tool (recommended)
+swift Private/Tools/ImportP12ToKeychain.swift ./cert.pfx "password"
+
+# Output: SUCCESS:ABC123DEF456...:Your-Certificate-Name
+```
+
+### Verify Certificate in Keychain
+
+```bash
+# List all identities
+swift Private/Tools/FindIdentity.swift
+
+# Find specific thumbprint
+swift Private/Tools/FindIdentity.swift ABC123DEF456...
+```
+
+### Configure for Keychain Authentication
+
+```json
+{
+    "AuthMethod": "Certificate",
+    "Certificate": {
+        "Source": "Keychain",
+        "Thumbprint": "ABC123DEF456..."
+    }
+}
+```
+
+!!! tip "PFX Fallback"
+    If Swift is unavailable, you can add a fallback PFX path:
+    ```json
+    "Certificate": {
+        "Source": "Keychain",
+        "Thumbprint": "ABC123DEF456...",
+        "FallbackPfxPath": "./backup-cert.pfx",
+        "FallbackPfxPassword": "password"
+    }
+    ```

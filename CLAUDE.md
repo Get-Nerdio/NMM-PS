@@ -74,6 +74,24 @@ API credentials stored in `Private/Data/ConfigData.json`:
 }
 ```
 
+### macOS Keychain Authentication
+```json
+{
+    "AuthMethod": "Certificate",
+    "Certificate": {
+        "Source": "Keychain",
+        "Thumbprint": "ABC123DEF456..."
+    }
+}
+```
+
+**Note:** macOS Keychain support uses Swift helper tools in `Private/Tools/`:
+- `ImportP12ToKeychain.swift` - Import P12 to data protection keychain
+- `ExportIdentity.swift` - Export identity by thumbprint to temp PFX
+- `FindIdentity.swift` - Query all identities (bypasses `security` CLI limitations)
+
+Requires Xcode Command Line Tools: `xcode-select --install`
+
 For local development, set `$env:NMM_DEV_MODE = 'true'` to use `ConfigData-Local.json` instead.
 
 ## Commands

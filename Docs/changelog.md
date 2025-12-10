@@ -28,10 +28,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - JSON export for CI/CD integration
   - Prepared for future PUT/POST/DELETE testing
 
-- **macOS Keychain Certificate Support** - Enhanced certificate authentication
+- **macOS Keychain Certificate Support** - Native Swift-based keychain access
   - Support for `Source: Keychain` in configuration
-  - Fallback to PFX when Keychain private key association fails (common macOS issue)
-  - Improved error messages with troubleshooting guidance
+  - Swift helper tools for proper data protection keychain access
+  - `ImportP12ToKeychain.swift` - Import P12 using modern SecItem API
+  - `ExportIdentity.swift` - Export identity by thumbprint
+  - `FindIdentity.swift` - Query identities from keychain
+  - Works with both file-based and data protection keychains
+  - Automatic fallback to PFX file when Swift unavailable
 
 ### Changed
 
@@ -42,8 +46,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- macOS certificate import private key association detection
-- Keychain identity lookup with helpful fallback mechanism
+- macOS Keychain certificate authentication now fully functional
+- Resolved data protection vs file-based keychain access issues
+- `security find-identity` limitations bypassed with native Swift APIs
 
 ## [0.2.0] - 2025-12-08
 

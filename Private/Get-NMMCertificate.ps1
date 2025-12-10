@@ -151,14 +151,11 @@ function Get-CertificateFromKeychain {
     .SYNOPSIS
         Retrieves certificate from macOS Keychain.
     .DESCRIPTION
-        Uses the macOS security command-line tool to find and export a certificate
-        with its private key from the Keychain. The certificate can be found by
-        thumbprint (SHA-1 hash) or subject name.
+        Uses Swift scripts to properly access macOS Keychain identities, including
+        the modern data protection keychain. Falls back to PFX file if provided.
 
-        Note: macOS Keychain has known issues with PKCS12 import where the private key
-        may not be properly associated with the certificate. If the identity is not found
-        but a PfxPath and PfxPassword are provided in the config, it will fall back to
-        loading directly from the PFX file.
+        The standard 'security' command-line tool cannot access identities in the
+        data protection keychain, so we use Swift with the Security framework.
     #>
     [CmdletBinding()]
     param(
@@ -178,138 +175,92 @@ function Get-CertificateFromKeychain {
         throw "Either -Thumbprint or -Subject must be specified for Keychain source."
     }
 
-    Write-Verbose "Searching macOS Keychain: $KeychainPath"
+    Write-Verbose "Searching macOS Keychain for certificate"
+
+    # Get path to Swift tools
+    $toolsPath = Join-Path $PSScriptRoot "Tools"
+    $exportScript = Join-Path $toolsPath "ExportIdentity.swift"
+
+    # Check if Swift is available
+    $swiftPath = Get-Command swift -ErrorAction SilentlyContinue
+    if (-not $swiftPath) {
+        Write-Warning "Swift not found. Install Xcode Command Line Tools: xcode-select --install"
+        Write-Warning "Falling back to PFX file if available..."
+
+        if ($FallbackPfxPath -and (Test-Path $FallbackPfxPath)) {
+            return Get-CertificateFromPfx -PfxPath $FallbackPfxPath -PfxPassword $FallbackPfxPassword
+        }
+        throw "Swift is required for Keychain access on macOS. Install with: xcode-select --install"
+    }
+
+    # Check if our Swift export script exists
+    if (-not (Test-Path $exportScript)) {
+        Write-Warning "Swift export tool not found at $exportScript"
+
+        if ($FallbackPfxPath -and (Test-Path $FallbackPfxPath)) {
+            Write-Verbose "Falling back to PFX file: $FallbackPfxPath"
+            return Get-CertificateFromPfx -PfxPath $FallbackPfxPath -PfxPassword $FallbackPfxPassword
+        }
+        throw "Keychain export tool not found and no fallback PFX provided."
+    }
 
     try {
-        # First, check if the certificate exists in the keychain at all
-        $certExists = $false
-        if ($Thumbprint) {
-            $certCheck = & security find-certificate -a -Z "$KeychainPath" 2>&1
-            if ($certCheck -match $Thumbprint) {
-                $certExists = $true
-                Write-Verbose "Certificate with thumbprint $Thumbprint found in keychain"
-            }
-        }
-
-        # Find all identities (cert + private key pairs) in the keychain
-        $identityOutput = & security find-identity -v "$KeychainPath" 2>&1
-
-        if ($LASTEXITCODE -ne 0 -and $identityOutput -notmatch "0 valid identities found") {
-            throw "Failed to search Keychain: $identityOutput"
-        }
-
-        # Parse the identity output to find matching certificate
-        # Format: "  1) HASH "Subject Name (details)""
-        $identityHash = $null
-        $identityName = $null
-
-        foreach ($line in $identityOutput) {
-            if ($line -match '^\s*\d+\)\s+([A-F0-9]{40})\s+"(.+)"') {
-                $hash = $Matches[1]
-                $name = $Matches[2]
-
-                if ($Thumbprint -and $hash -eq $Thumbprint.ToUpper()) {
-                    $identityHash = $hash
-                    $identityName = $name
-                    break
-                }
-                elseif ($Subject -and $name -like "*$Subject*") {
-                    $identityHash = $hash
-                    $identityName = $name
-                    break
-                }
-            }
-        }
-
-        # If no identity found but certificate exists, the private key wasn't properly imported
-        if (-not $identityHash -and $certExists) {
-            Write-Warning "Certificate found in Keychain but private key is not associated (common macOS import issue)."
-
-            # Try fallback to PFX if provided
-            if ($FallbackPfxPath -and (Test-Path $FallbackPfxPath)) {
-                Write-Verbose "Falling back to PFX file: $FallbackPfxPath"
-                return Get-CertificateFromPfx -PfxPath $FallbackPfxPath -PfxPassword $FallbackPfxPassword
-            }
-
-            throw "Certificate exists in Keychain but has no associated private key. This is a known macOS issue. Workaround: Use Source='PfxFile' instead, or provide FallbackPfxPath in your configuration."
-        }
-
-        if (-not $identityHash) {
-            $searchCriteria = if ($Thumbprint) { "thumbprint '$Thumbprint'" } else { "subject '$Subject'" }
-
-            # Provide helpful error message
-            $errorMsg = "Certificate identity with $searchCriteria not found in Keychain '$KeychainPath'."
-            if ($identityOutput -match "0 valid identities found") {
-                $errorMsg += "`n`nNo valid identities (certificate + private key pairs) exist in this keychain."
-                $errorMsg += "`nThis can happen when:`n  1. The PFX import didn't include the private key`n  2. The certificate was imported without its private key`n  3. Access permissions prevent reading the private key"
-                $errorMsg += "`n`nRecommendation: Use Source='PfxFile' for more reliable certificate loading on macOS."
-            }
-            else {
-                $errorMsg += "`n`nAvailable identities:`n$identityOutput"
-            }
-            throw $errorMsg
-        }
-
-        Write-Verbose "Found identity: $identityName [Hash: $identityHash]"
-
-        # Export the specific identity to a temporary PKCS12
+        # Export identity to temp PFX using Swift
         $tempPfx = [System.IO.Path]::GetTempFileName() + ".pfx"
         $tempPassword = [guid]::NewGuid().ToString()
 
-        try {
-            # Export all identities from keychain (we'll filter after loading)
-            $exportResult = & security export -k "$KeychainPath" -t identities -f pkcs12 -P "$tempPassword" -o "$tempPfx" 2>&1
+        $searchParam = if ($Thumbprint) { $Thumbprint.ToUpper() } else { $Subject }
 
-            if (-not (Test-Path $tempPfx) -or (Get-Item $tempPfx).Length -eq 0) {
-                throw "Failed to export certificate from Keychain. You may need to allow access in Keychain Access app."
-            }
+        Write-Verbose "Exporting identity from Keychain using Swift..."
+        $result = & swift $exportScript $searchParam $tempPfx $tempPassword 2>&1
 
-            # Load the PKCS12
-            $pfxCollection = [System.Security.Cryptography.X509Certificates.X509Certificate2Collection]::new()
-            $pfxCollection.Import($tempPfx, $tempPassword, [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable)
+        if ($result -match '^SUCCESS:([^:]+):(.+)$') {
+            $foundThumbprint = $Matches[1]
+            $foundSubject = $Matches[2]
+            Write-Verbose "Found identity: $foundSubject [Thumbprint: $foundThumbprint]"
 
-            # Find the matching certificate in the collection
-            $cert = $null
-            foreach ($c in $pfxCollection) {
-                if ($c.HasPrivateKey) {
-                    if ($Thumbprint -and $c.Thumbprint -eq $Thumbprint.ToUpper()) {
-                        $cert = $c
-                        break
-                    }
-                    elseif ($Subject -and $c.Subject -like "*$Subject*") {
-                        $cert = $c
-                        break
-                    }
-                    elseif ($c.Thumbprint -eq $identityHash) {
-                        $cert = $c
-                        break
-                    }
-                }
-            }
-
-            if (-not $cert) {
-                # If exact match not found, try the first cert with private key
-                $cert = $pfxCollection | Where-Object { $_.HasPrivateKey } | Select-Object -First 1
-            }
-
-            if (-not $cert) {
-                throw "No certificate with private key found in exported PKCS12"
-            }
-
-            Write-Verbose "Loaded certificate: $($cert.Subject) [Thumbprint: $($cert.Thumbprint)]"
-            return $cert
-        }
-        finally {
-            # Clean up temp file securely
+            # Load the exported PFX
             if (Test-Path $tempPfx) {
-                # Overwrite with zeros before deleting
-                [System.IO.File]::WriteAllBytes($tempPfx, [byte[]]::new(1024))
-                Remove-Item $tempPfx -Force -ErrorAction SilentlyContinue
+                $securePassword = ConvertTo-SecureString -String $tempPassword -AsPlainText -Force
+                $cert = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new(
+                    $tempPfx,
+                    $securePassword,
+                    [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable
+                )
+
+                Write-Verbose "Loaded certificate: $($cert.Subject) [Thumbprint: $($cert.Thumbprint)]"
+                return $cert
             }
+        }
+        elseif ($result -match '^ERROR:(.+)$') {
+            $errorMsg = $Matches[1]
+            Write-Verbose "Swift export failed: $errorMsg"
+
+            # Try fallback to PFX
+            if ($FallbackPfxPath -and (Test-Path $FallbackPfxPath)) {
+                Write-Warning "Identity not found in Keychain. Falling back to PFX file."
+                return Get-CertificateFromPfx -PfxPath $FallbackPfxPath -PfxPassword $FallbackPfxPassword
+            }
+
+            throw "Identity not found in Keychain: $errorMsg"
+        }
+        else {
+            Write-Verbose "Unexpected Swift output: $result"
+
+            if ($FallbackPfxPath -and (Test-Path $FallbackPfxPath)) {
+                Write-Warning "Keychain access failed. Falling back to PFX file."
+                return Get-CertificateFromPfx -PfxPath $FallbackPfxPath -PfxPassword $FallbackPfxPassword
+            }
+
+            throw "Failed to export identity from Keychain: $result"
         }
     }
-    catch {
-        throw "Failed to retrieve certificate from Keychain: $_"
+    finally {
+        # Clean up temp file securely
+        if (Test-Path $tempPfx) {
+            [System.IO.File]::WriteAllBytes($tempPfx, [byte[]]::new(1024))
+            Remove-Item $tempPfx -Force -ErrorAction SilentlyContinue
+        }
     }
 }
 

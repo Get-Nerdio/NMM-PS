@@ -86,12 +86,50 @@ Get-NMMAccount | ForEach-Object {
 
 ### Certificate-Based Authentication
 
-```powershell
-# Create and configure certificate
-New-NMMApiCertificate -ExportToCertStore -Upload -UpdateConfig
+=== "Windows"
 
-# Connect using certificate
-Connect-NMMApi -CertificateThumbprint "YOUR_THUMBPRINT"
+    ```powershell
+    # Create and configure certificate
+    New-NMMApiCertificate -ExportToCertStore -Upload -UpdateConfig
+
+    # Connect using certificate
+    Connect-NMMApi -CertificateThumbprint "YOUR_THUMBPRINT"
+    ```
+
+=== "macOS"
+
+    ```powershell
+    # Create certificate and import to Keychain
+    New-NMMApiCertificate -ExportToCertStore -Upload -UpdateConfig
+
+    # Or import existing P12 to Keychain using Swift tool
+    # swift Private/Tools/ImportP12ToKeychain.swift ./cert.pfx "password"
+
+    # Connect using Keychain certificate
+    Connect-NMMApi  # Uses Keychain config automatically
+    ```
+
+### macOS Keychain Setup
+
+```powershell
+# Step 1: Import certificate to Keychain
+$result = & swift Private/Tools/ImportP12ToKeychain.swift ./nmm-cert.pfx "password"
+# Output: SUCCESS:ABC123DEF456...:NMM-API-Certificate
+
+# Step 2: Extract thumbprint from result
+$thumbprint = ($result -split ':')[1]
+
+# Step 3: Update ConfigData.json
+@{
+    AuthMethod = "Certificate"
+    Certificate = @{
+        Source = "Keychain"
+        Thumbprint = $thumbprint
+    }
+} | ConvertTo-Json | Set-Content Private/Data/ConfigData.json
+
+# Step 4: Connect
+Connect-NMMApi -Verbose
 ```
 
 ### Token Expiry Check

@@ -205,14 +205,32 @@ function New-NMMApiCertificate {
                     $pfxBytes = $cert.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Pfx, $tempSecurePassword)
                     [System.IO.File]::WriteAllBytes($tempPfx, $pfxBytes)
 
-                    # Import to keychain
-                    & security import $tempPfx -k login.keychain-db -P $tempPassword -T /usr/bin/codesign 2>&1 | Out-Null
-
-                    $exportedTo += "Keychain:login.keychain-db"
-                    Write-Host "  Imported to Keychain" -ForegroundColor Green
+                    # Use Swift tool for proper keychain import (handles data protection keychain)
+                    $swiftImportScript = Join-Path $PSScriptRoot "../Private/Tools/ImportP12ToKeychain.swift"
+                    if (Test-Path $swiftImportScript) {
+                        $result = & swift $swiftImportScript $tempPfx $tempPassword 2>&1
+                        if ($result -match '^SUCCESS:') {
+                            $exportedTo += "Keychain:DataProtection"
+                            Write-Host "  Imported to Keychain (data protection)" -ForegroundColor Green
+                        }
+                        else {
+                            Write-Warning "Swift import failed: $result"
+                            # Fall back to security command
+                            & security import $tempPfx -k login.keychain-db -P $tempPassword -T /usr/bin/codesign 2>&1 | Out-Null
+                            $exportedTo += "Keychain:login.keychain-db"
+                            Write-Host "  Imported to Keychain (file-based)" -ForegroundColor Yellow
+                        }
+                    }
+                    else {
+                        # Fall back to security command
+                        & security import $tempPfx -k login.keychain-db -P $tempPassword -T /usr/bin/codesign 2>&1 | Out-Null
+                        $exportedTo += "Keychain:login.keychain-db"
+                        Write-Host "  Imported to Keychain" -ForegroundColor Green
+                    }
                 }
                 finally {
                     if (Test-Path $tempPfx) {
+                        [System.IO.File]::WriteAllBytes($tempPfx, [byte[]]::new(1024))
                         Remove-Item $tempPfx -Force
                     }
                 }
